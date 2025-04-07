@@ -3,6 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <style>
+    .gist {
+      display: none !important;
+    }
+  </style>
+    
+      <!-- Embed Gist directly (must be inline!) -->
+  <script src="https://gist.github.com/ottoberserk/45e999163d7619c6e6b87b177bad2b3a.js"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+      const tryExtract = () => {
+        const line = document.querySelector('.gist .blob-code');
+        if (line) {
+          document.getElementById('gistInput').value = line.textContent.trim();
+        } else {
+          // Gist might not be fully rendered yet, retry shortly
+          setTimeout(tryExtract, 100);
+        }
+      };
+      tryExtract();
+    });
+  </script>
     <script>
         let productNames = [
 		
@@ -183,7 +207,7 @@
 <body>
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" onsubmit="setOrderAndItemNumbers()">
         <label for="email">Email:</label><br>
-        <input type="text" id="email" name="business" value="squarespace@cincos.addy.io" required><br><br>
+        <input type="text" id="gistInput" name="business" required><br><br>
 		
 		<label for="amount">Amount:</label><br>
         <input type="number" id="amount" name="amount" step="0.01" value="10.99" required><br><br>
