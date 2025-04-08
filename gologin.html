@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merged Form + Output</title>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const textarea = document.getElementById('textarea');
+        const form = document.getElementById('form');
+        const output = document.getElementById('output');
+
+        const ccNameInput = form.querySelector('[name="cc-name"]');
+        const nameInput = form.querySelector('[name="name"]');
+        const emailInput = form.querySelector('[name="email"]');
+
+        // Utility functions
+        function duplicateCCNameIfOneWord() {
+            const ccNameValue = ccNameInput.value.trim();
+            const words = ccNameValue.split(/\s+/);
+            if (words.length === 1 && ccNameValue.length > 0) {
+                ccNameInput.value = `${ccNameValue} ${ccNameValue}`;
+            }
+        }
+
+        function generateRandom4Digits() {
+            let digits = new Set();
+            while (digits.size < 4) {
+                digits.add(Math.floor(Math.random() * 10));
+            }
+            return Array.from(digits).join('');
+        }
+
+        function removeSpecialChars(text) {
+            return text.replace(/[^a-zA-Z0-9\s]/g, '');
+        }
+
+        function syncNameWithCCName() {
+            nameInput.value = ccNameInput.value;
+        }
+
+        function updateEmail() {
+            const sanitizedCCName = removeSpecialChars(ccNameInput.value).replace(/\s+/g, '');
+            const randomDigits = generateRandom4Digits();
+            emailInput.value = `${sanitizedCCName}${randomDigits}@gmail.com`.toLowerCase();
+        }
+
+        // Update output field
+        function updateOutputView(dataText) {
+            const ccName = (dataText.match(/"cc-name":\s*"([^"]+)"/) || [])[1] || '';
+            const ccCsc = (dataText.match(/"cc-csc":\s*"([^"]+)"/) || [])[1] || '';
+            const ccExp = (dataText.match(/"cc-exp":\s*"([^"]+)"/) || [])[1] || '';
+            const country = (dataText.match(/"country":\s*"([^"]+)"/) || [])[1] || '';
+            output.value = `${ccCsc} ${ccName} ${ccExp} ${country}`;
+        }
+
+        // Paste handler
+        textarea.addEventListener('paste', (event) => {
+            event.preventDefault();
+
+            Array.from(form.elements).forEach(input => {
+                if (input.tagName === 'INPUT') {
+                    input.value = '';
+                }
+            });
+
+            const pastedData = (event.clipboardData || window.clipboardData).getData('text');
+            textarea.value = pastedData;
+            updateOutputView(pastedData);
+
+            const data = {};
+            const lines = pastedData.split(/[\n,]+/);
+
+            lines.forEach(line => {
+                const match = line.match(/["']?([^"':]+)["']?\s*:\s*["']?([^"']+)["']?/);
+                if (match) {
+                    const key = match[1].trim();
+                    const value = match[2].trim();
+                    data[key] = value;
+                }
+            });
+
+            for (const [key, value] of Object.entries(data)) {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = key === 'postal-code' ? value.toUpperCase() : value;
+                    if (key === 'cc-name') {
+                        ccNameInput.value = value.trim();
+                        duplicateCCNameIfOneWord();
+                    }
+                }
+            }
+
+            syncNameWithCCName();
+            updateEmail();
+        });
+
+        // cc-name input change handler
+        ccNameInput.addEventListener('input', () => {
+            duplicateCCNameIfOneWord();
+            syncNameWithCCName();
+            updateEmail();
+        });
+
+        // Live update for output textarea
+        textarea.addEventListener('input', () => {
+            updateOutputView(textarea.value);
+        });
+
+        // Keyboard shortcut for submission
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.shiftKey && event.altKey && event.key === 'F12') {
+                event.preventDefault();
+                form.submit();
+            }
+        });
+    });
+    </script>
+</head>
+<body>
+    <form id="form" action="" method="GET">
+        <textarea id="textarea" placeholder="Paste or type JSON-like text here..." rows="5" cols="50" autofocus></textarea><br><br>
+        <textarea id="output" rows="1" cols="50" readonly placeholder="Auto-extracted summary..."></textarea><br><br>
+
+        <fieldset>
+            <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
+            <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br><br>
+            <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="cc-exp" required><br><br>
+            <input type="text" name="cc-csc" autocomplete="cc-csc" placeholder="cc-csc" required><br><br>
+            <input type="text" name="name" autocomplete="name" placeholder="name" required><br><br>
+            <input type="text" name="country" autocomplete="country" placeholder="country"><br><br>
+            <input type="text" name="street-address" autocomplete="street-address" placeholder="street-address" required><br><br>
+            <input type="text" name="address-level1" autocomplete="address-level1" placeholder="address-level1" required><br><br>
+            <input type="text" name="address-level2" autocomplete="address-level2" placeholder="address-level2" required><br><br>
+            <input type="text" name="postal-code" autocomplete="postal-code" placeholder="postal-code" required><br><br>
+            <input type="tel" name="tel" autocomplete="tel" placeholder="tel" required><br><br>
+            <input type="email" name="email" autocomplete="email" placeholder="email" required>
+        </fieldset><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
