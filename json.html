@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<textarea id="input" rows="20" cols="100"></textarea>
+<br>
+<button onclick="extractJSONs()">Extract JSONs</button>
+<br>
+<textarea id="output" rows="20" cols="100" readonly></textarea>
+
+<script>
+function extractJSONs() {
+  const text = document.getElementById("input").value;
+
+  // Match blocks that look like JSON entries with cc-name as the anchor
+  const regex = /{[^{}]*?"cc-name"\s*:\s*".+?"[^{}]*?}/gs;
+  const matches = text.match(regex);
+  let result = "";
+
+  if (matches && matches.length > 0) {
+    for (let block of matches) {
+      try {
+        const json = JSON.parse(block.replace(/(\r\n|\n|\r)/gm, "").trim());
+        result += JSON.stringify(json, null, 2) + "\n\n";
+      } catch (e) {
+        result += "// Invalid or incomplete block skipped\n\n";
+      }
+    }
+  } else {
+    result = "No JSON entries found.";
+  }
+
+  document.getElementById("output").value = result;
+}
+</script>
+
+</body>
+</html>
