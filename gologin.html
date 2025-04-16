@@ -118,8 +118,9 @@
 </head>
 <body>
     <form id="form" action="" method="GET">
-        <textarea id="textarea" placeholder="Paste or type JSON-like text here..." rows="5" cols="50" autofocus></textarea><br><br>
-        <textarea id="output" rows="1" cols="50" readonly placeholder="Auto-extracted summary..."></textarea><br><br>
+        <textarea id="textarea" placeholder="Paste or type JSON-like text here..." rows="1" cols="50" autofocus></textarea><br>
+             <button type="submit">Submit</button><br>
+        <textarea id="output" rows="1" cols="50" readonly placeholder="Auto-extracted summary..."></textarea><br>
 
         <fieldset>
             <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
@@ -136,7 +137,7 @@
             <input type="email" name="email" autocomplete="email" placeholder="email" required>
         </fieldset><br>
 
-        <button type="submit">Submit</button>
+
     </form>
 </body>
 </html>
