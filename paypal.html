@@ -204,7 +204,7 @@
 
     <label for="amount">Amount:</label><br>
     <input type="number" id="amount" name="amount" step="0.01" value="1.00" required><br><br>
-      <input type="hidden" name="quantity" value="3">
+     
 
     <label for="itemName">Item Name:</label><br>
     <input type="text" id="itemName" name="item_name" required readonly><br><br>
@@ -221,6 +221,15 @@
       <option value="AUD">Australian Dollar (AUD)</option>
       <option value="INR">Indian Rupee (INR)</option>
     </select><br><br>
+
+     <label for="quantity">Quantity:</label>
+  <select name="quantity" id="quantity">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
 
     <button type="submit" id="bill">Bill</button>
 
