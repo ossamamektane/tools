@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subject Line Reverser</title>
+  <style>
+    body { font-family: sans-serif; background: #f5f5f5; padding: 30px; }
+    textarea { width: 100%; height: 80px; font-size: 16px; margin-top: 10px; padding: 10px; }
+    button { margin-top: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #outputBox { margin-top: 15px; background: #fff; padding: 10px; border: 1px solid #ccc; font-size: 18px; }
+  </style>
+</head>
+<body>
+
+<h2>Reverse Subject + Add RLO (Gmail Bypass)</h2>
+<p>Paste a normal subject line:</p>
+<textarea id="inputSubject" placeholder="Enter your subject here..."></textarea>
+<br>
+<button onclick="reverseSubject()">Generate Reversed Subject</button>
+
+<h3>Result:</h3>
+<div id="outputBox"></div>
+<button onclick="copyToClipboard()">Copy to Clipboard</button>
+
+<script>
+function reverseSubject() {
+  const input = document.getElementById("inputSubject").value;
+  const reversed = input.split('').reverse().join('');
+  const rlo = "\u202E";
+  const result = rlo + reversed;
+  document.getElementById("outputBox").textContent = result;
+}
+
+function copyToClipboard() {
+  const text = document.getElementById("outputBox").textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Copied to clipboard ✅");
+  });
+}
+</script>
+
+</body>
+</html>
