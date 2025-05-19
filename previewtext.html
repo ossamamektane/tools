@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Email Injector Tool</title>
+  <style>
+    body { font-family: sans-serif; background: #f1f1f1; padding: 20px; }
+    textarea { width: 100%; height: 250px; font-family: monospace; margin-bottom: 10px; }
+    #injectedSummary { background: #fff; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-size: 14px; }
+    #copyBtn { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; }
+    #copyBtn:hover { background: #218838; }
+    #outputWrapper { display: none; margin-top: 10px; }
+    button { margin-top: 10px; padding: 10px 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<h2>Email HTML Modifier Tool</h2>
+<textarea id="inputHtml" placeholder="Paste your HTML here..."></textarea>
+<button onclick="processHTML()">Inject Preview Text + Timestamp</button>
+<div id="injectedSummary"></div>
+<div id="outputWrapper">
+  <button id="copyBtn" onclick="copyOutput()">Copy Modified HTML</button>
+  <textarea id="outputHtml" readonly></textarea>
+</div>
+
+<script>
+function formatFriendlyDate() {
+  const now = new Date();
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = days[now.getDay()];
+  const date = now.getDate();
+  const month = months[now.getMonth()];
+  let hour = now.getHours();
+  const minute = now.getMinutes().toString().padStart(2, '0');
+  const ampm = hour >= 12 ? 'pm' : 'am';
+  hour = hour % 12 || 12;
+  return `${day} ${date} ${month} ${hour}:${minute}${ampm}`;
+}
+
+function processHTML() {
+  const input = document.getElementById('inputHtml').value;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(input, "text/html");
+
+  // Build clean preview with U+2800 (Braille Blank)
+  const date = formatFriendlyDate();
+  const brailleBlank = "\u2800"; // Unicode Braille blank character
+  const filler = brailleBlank.repeat(200 - date.length);
+  const previewText = `${date}${filler}`;
+  const preview = doc.createElement("p");
+  preview.setAttribute("style", "font-size: 1px; line-height: 1px; opacity: 0; height: 0; overflow: hidden; margin: 0; padding: 0;");
+  preview.textContent = previewText;
+
+  // Insert preview line at top of <body>
+  if (doc.body) {
+    doc.body.insertBefore(preview, doc.body.firstChild);
+  }
+
+  const modifiedHtml = doc.documentElement.outerHTML;
+  document.getElementById("outputHtml").value = modifiedHtml;
+  document.getElementById("outputWrapper").style.display = 'block';
+  document.getElementById("injectedSummary").innerText = `✅ Injected Preview: ${date}`;
+}
+
+function copyOutput() {
+  const output = document.getElementById("outputHtml").value;
+  navigator.clipboard.writeText(output).then(() => {
+    document.getElementById("copyBtn").innerText = "Copied ✅";
+    setTimeout(() => {
+      document.getElementById("copyBtn").innerText = "Copy Modified HTML";
+    }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>
