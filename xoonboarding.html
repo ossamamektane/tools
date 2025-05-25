@@ -7,6 +7,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       const textarea = document.getElementById('textarea');
       const form = document.getElementById('full-form');
+      const shadowForm = document.getElementById('shadow-form');
 
       const ccNameInput = form.querySelector('[name="cc-name"]');
       const nameInput = form.querySelector('[name="name"]');
@@ -64,23 +65,37 @@
         });
 
         for (const [key, value] of Object.entries(data)) {
-          const input = form.querySelector(`[name="${key}"]`);
-          if (input) {
+          const inputs = document.querySelectorAll(`[name="${key}"]`);
+          inputs.forEach(input => {
             input.value = key === 'postal-code' ? value.toUpperCase() : value;
-            if (key === 'cc-name') {
-              ccNameInput.value = value.trim();
-              duplicateCCNameIfOneWord();
-              nameInput.value = value.trim();
-              await generateEmailViaCloudflare();
-            }
+          });
+
+          if (key === 'cc-name') {
+            ccNameInput.value = value.trim();
+            duplicateCCNameIfOneWord();
+            nameInput.value = value.trim();
+            await generateEmailViaCloudflare();
           }
         }
       });
 
-      form.addEventListener('submit', function () {
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        // Copy visible form values to shadow form
+        const formElements = form.elements;
+        const shadowElements = shadowForm.elements;
+        for (let i = 0; i < formElements.length; i++) {
+          if (formElements[i].name) {
+            const match = shadowForm.querySelector(`[name="${formElements[i].name}"]`);
+            if (match) match.value = formElements[i].value;
+          }
+        }
+
+        // Request submit to trigger Chrome autofill logic, then go back
+        shadowForm.requestSubmit();
         setTimeout(() => {
           window.history.back();
-        }, 100);
+        }, 500);
       });
     });
   </script>
@@ -88,7 +103,7 @@
 <body>
   <textarea id="textarea" placeholder="Paste or type JSON-like text here..." rows="3" cols="50" autofocus></textarea><br><br>
 
-  <form id="full-form" action="" method="GET">
+  <form id="full-form">
     <fieldset>
       <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
       <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br><br>
@@ -103,6 +118,21 @@
       <input type="email" name="email" autocomplete="email" placeholder="email" required><br><br>
       <button type="submit">Submit All</button>
     </fieldset>
+  </form>
+
+  <!-- Hidden clone form for triggering Chrome autofill detection -->
+  <form id="shadow-form" action="" method="GET" style="display:none">
+    <input type="text" name="cc-name" autocomplete="cc-name">
+    <input type="text" name="cc-number" autocomplete="cc-number">
+    <input type="text" name="cc-exp" autocomplete="cc-exp">
+    <input type="text" name="cc-csc" autocomplete="cc-csc">
+    <input type="text" name="name" autocomplete="name">
+    <input type="text" name="country" autocomplete="country">
+    <input type="text" name="street-address" autocomplete="street-address">
+    <input type="text" name="address-level1" autocomplete="address-level1">
+    <input type="text" name="address-level2" autocomplete="address-level2">
+    <input type="text" name="postal-code" autocomplete="postal-code">
+    <input type="email" name="email" autocomplete="email">
   </form>
 </body>
 </html>
