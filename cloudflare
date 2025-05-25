@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PayPal Email Generator</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 60px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      width: 260px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #0f0;
+    }
+  </style>
+</head>
+<body>
+  <h2>PayPal Email Alias Generator</h2>
+  <input type="text" id="fname" placeholder="First Name"><br>
+  <input type="text" id="lname" placeholder="Last Name"><br>
+  <button onclick="generateEmail()">Generate</button>
+  <div id="result"></div>
+  <button id="copyBtn" style="display:none;" onclick="copyAlias()">Copy to Clipboard</button>
+
+  <script>
+    async function generateEmail() {
+      const first = document.getElementById("fname").value.trim();
+      const last = document.getElementById("lname").value.trim();
+      const result = document.getElementById("result");
+      const copyBtn = document.getElementById("copyBtn");
+
+      if (!first || !last) {
+        result.innerText = "Please enter both names.";
+        result.style.color = "#f00";
+        return;
+      }
+
+      result.innerText = "Generating...";
+      result.style.color = "#fff";
+
+      try {
+        const response = await fetch("https://misty-dew-0e2a.ottoberserk.workers.dev/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firstName: first, lastName: last })
+        });
+
+        const data = await response.json();
+        if (data.alias) {
+          result.innerText = "Email: " + data.alias;
+          result.style.color = "#0f0";
+          copyBtn.style.display = "inline-block";
+          copyBtn.setAttribute("data-alias", data.alias);
+        } else {
+          result.innerText = "Something went wrong.";
+          result.style.color = "#f00";
+        }
+      } catch (err) {
+        result.innerText = "Error: " + err.message;
+        result.style.color = "#f00";
+      }
+    }
+
+    function copyAlias() {
+      const alias = document.getElementById("copyBtn").getAttribute("data-alias");
+      navigator.clipboard.writeText(alias).then(() => {
+        alert("Copied: " + alias);
+      });
+    }
+  </script>
+</body>
+</html>
