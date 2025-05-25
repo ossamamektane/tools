@@ -3,6 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .form-row {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+    .form-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+    fieldset {
+      border: 1px solid #ccc;
+      padding: 20px;
+    }
+    .hidden-submit {
+      display: none;
+    }
+  </style>
   <script>
     const params = new URLSearchParams(window.location.search);
     if (params.get("close") === "true") {
@@ -13,6 +33,7 @@
       const textarea = document.getElementById('textarea');
       const cardForm = document.getElementById('card-form');
       const billingForm = document.getElementById('billing-form');
+      const submitBoth = document.getElementById('submit-both');
       const ccNameInput = cardForm.querySelector('[name="cc-name"]');
       const nameInput = billingForm.querySelector('[name="name"]');
       const emailInput = billingForm.querySelector('[name="email"]');
@@ -80,39 +101,47 @@
           }
         }
       });
+
+      submitBoth.addEventListener('click', () => {
+        cardForm.submit();
+        billingForm.submit();
+      });
     });
   </script>
 </head>
 <body>
   <textarea id="textarea" placeholder="Paste or type JSON-like text here..." rows="3" cols="50" autofocus></textarea><br><br>
 
-  <!-- Credit Card Form -->
-  <form id="card-form" action="" method="GET" target="_blank">
-    <input type="hidden" name="close" value="true">
-    <fieldset>
-      <legend>Card Info</legend>
-      <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
-      <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br><br>
-      <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="cc-exp" required><br><br>
-      <input type="text" name="cc-csc" autocomplete="cc-csc" placeholder="cc-csc" required><br><br>
-      <button type="submit">Submit Card</button>
-    </fieldset>
-  </form><br><br>
+  <fieldset>
+    <legend>Card & Billing Info</legend>
+    <div class="form-row">
+      <form id="card-form" action="" method="GET" target="_blank" class="form-section">
+        <input type="hidden" name="close" value="true">
+        <div>
+          <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
+          <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br><br>
+          <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="cc-exp" required><br><br>
+          <input type="text" name="cc-csc" autocomplete="cc-csc" placeholder="cc-csc" required><br><br>
+        </div>
+        <button type="submit" class="hidden-submit">Submit Card</button>
+      </form>
 
-  <!-- Billing Info Form -->
-  <form id="billing-form" action="" method="GET" target="_blank">
-    <input type="hidden" name="close" value="true">
-    <fieldset>
-      <legend>Billing Info</legend>
-      <input type="text" name="name" autocomplete="name" placeholder="name" required><br><br>
-      <input type="text" name="country" autocomplete="country" placeholder="country"><br><br>
-      <input type="text" name="street-address" autocomplete="street-address" placeholder="street-address" required><br><br>
-      <input type="text" name="address-level1" autocomplete="address-level1" placeholder="address-level1" required><br><br>
-      <input type="text" name="address-level2" autocomplete="address-level2" placeholder="address-level2" required><br><br>
-      <input type="text" name="postal-code" autocomplete="postal-code" placeholder="postal-code" required><br><br>
-      <input type="email" name="email" autocomplete="email" placeholder="email" required><br><br>
-      <button type="submit">Submit Billing</button>
-    </fieldset>
-  </form>
+      <form id="billing-form" action="" method="GET" target="_blank" class="form-section">
+        <input type="hidden" name="close" value="true">
+        <div>
+          <input type="text" name="name" autocomplete="name" placeholder="name" required><br><br>
+          <input type="text" name="country" autocomplete="country" placeholder="country"><br><br>
+          <input type="text" name="street-address" autocomplete="street-address" placeholder="street-address" required><br><br>
+          <input type="text" name="address-level1" autocomplete="address-level1" placeholder="address-level1" required><br><br>
+          <input type="text" name="address-level2" autocomplete="address-level2" placeholder="address-level2" required><br><br>
+          <input type="text" name="postal-code" autocomplete="postal-code" placeholder="postal-code" required><br><br>
+          <input type="email" name="email" autocomplete="email" placeholder="email" required><br><br>
+        </div>
+        <button type="submit" class="hidden-submit">Submit Billing</button>
+      </form>
+    </div>
+    <br>
+    <button id="submit-both">Submit Both</button>
+  </fieldset>
 </body>
 </html>
