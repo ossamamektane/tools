@@ -107,7 +107,7 @@
             }, 300);
         });
 
-        // Save form values before unload
+        // Save form values and textarea before unload
         window.addEventListener('beforeunload', () => {
             const formData = {};
             Array.from(form.elements).forEach(input => {
@@ -116,9 +116,10 @@
                 }
             });
             localStorage.setItem('formData', JSON.stringify(formData));
+            localStorage.setItem('textareaValue', textarea.value);
         });
 
-        // Restore form values on load
+        // Restore form values and textarea on load
         const saved = localStorage.getItem('formData');
         if (saved) {
             const values = JSON.parse(saved);
@@ -126,6 +127,11 @@
                 const input = form.querySelector(`[name="${key}"]`);
                 if (input) input.value = value;
             }
+        }
+
+        const savedText = localStorage.getItem('textareaValue');
+        if (savedText) {
+            textarea.value = savedText;
         }
     });
     </script>
