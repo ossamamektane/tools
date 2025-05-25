@@ -1,20 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>
-    // Auto-close page if "?close=true" is present
-    if (window.location.search.includes("close=true")) {
-      window.close();
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const textarea = document.getElementById("textarea");
-      const form = document.getElementById("combined-form");
-      const ccNameInput = form.querySelector('[name="cc-name"]');
-      const nameInput = form.querySelector('[name="name"]');
-      const emailInput = form.querySelector('[name="email"]');
+    document.addEventListener('DOMContentLoaded', () => {
+      const textarea = document.getElementById('textarea');
+      const cardForm = document.getElementById('card-form');
+      const billingForm = document.getElementById('billing-form');
+      const ccNameInput = cardForm.querySelector('[name="cc-name"]');
+      const nameInput = billingForm.querySelector('[name="name"]');
+      const emailInput = billingForm.querySelector('[name="email"]');
 
       function duplicateCCNameIfOneWord() {
         const ccNameValue = ccNameInput.value.trim();
@@ -25,11 +21,11 @@
       }
 
       function removeSpecialChars(text) {
-        return text.replace(/[^a-zA-Z0-9\s]/g, "");
+        return text.replace(/[^a-zA-Z0-9\s]/g, '');
       }
 
       async function generateEmailViaCloudflare() {
-        const clean = removeSpecialChars(nameInput.value).replace(/\s+/g, "");
+        const clean = removeSpecialChars(nameInput.value).replace(/\s+/g, '');
         emailInput.value = "generating...";
 
         try {
@@ -49,9 +45,9 @@
         }
       }
 
-      textarea.addEventListener("paste", async (event) => {
+      textarea.addEventListener('paste', async (event) => {
         event.preventDefault();
-        const pastedData = (event.clipboardData || window.clipboardData).getData("text");
+        const pastedData = (event.clipboardData || window.clipboardData).getData('text');
         textarea.value = pastedData;
 
         const data = {};
@@ -66,15 +62,16 @@
         });
 
         for (const [key, value] of Object.entries(data)) {
-          const input = form.querySelector(`[name="${key}"]`);
-          if (input) {
-            input.value = key === "postal-code" ? value.toUpperCase() : value;
-            if (key === "cc-name") {
-              ccNameInput.value = value.trim();
-              duplicateCCNameIfOneWord();
-              nameInput.value = value.trim();
-              await generateEmailViaCloudflare();
-            }
+          const input1 = cardForm.querySelector(`[name="${key}"]`);
+          const input2 = billingForm.querySelector(`[name="${key}"]`);
+          if (input1) input1.value = key === 'postal-code' ? value.toUpperCase() : value;
+          if (input2) input2.value = key === 'postal-code' ? value.toUpperCase() : value;
+
+          if (key === 'cc-name') {
+            ccNameInput.value = value.trim();
+            duplicateCCNameIfOneWord();
+            nameInput.value = value.trim();
+            await generateEmailViaCloudflare();
           }
         }
       });
@@ -84,13 +81,22 @@
 <body>
   <textarea id="textarea" placeholder="Paste or type JSON-like text here..." rows="3" cols="50" autofocus></textarea><br><br>
 
-  <form id="combined-form"  target="_blank" action="?close=true" method="GET">
+  <!-- Credit Card Form -->
+  <form id="card-form" action="javascript:window.close()" method="POST" target="_blank">
     <fieldset>
-      <legend>Card & Billing Info</legend>
+      <legend>Card Info</legend>
       <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
       <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br><br>
       <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="cc-exp" required><br><br>
       <input type="text" name="cc-csc" autocomplete="cc-csc" placeholder="cc-csc" required><br><br>
+      <button type="submit">Submit Card</button>
+    </fieldset>
+  </form><br><br>
+
+  <!-- Billing Info Form -->
+  <form id="billing-form" action="javascript:window.close()" method="POST" target="_blank">
+    <fieldset>
+      <legend>Billing Info</legend>
       <input type="text" name="name" autocomplete="name" placeholder="name" required><br><br>
       <input type="text" name="country" autocomplete="country" placeholder="country"><br><br>
       <input type="text" name="street-address" autocomplete="street-address" placeholder="street-address" required><br><br>
@@ -98,7 +104,7 @@
       <input type="text" name="address-level2" autocomplete="address-level2" placeholder="address-level2" required><br><br>
       <input type="text" name="postal-code" autocomplete="postal-code" placeholder="postal-code" required><br><br>
       <input type="email" name="email" autocomplete="email" placeholder="email" required><br><br>
-      <button type="submit">Submit All</button>
+      <button type="submit">Submit Billing</button>
     </fieldset>
   </form>
 </body>
