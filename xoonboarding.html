@@ -99,14 +99,6 @@
             }
         });
 
-        // Prevent form reset on submit
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            setTimeout(() => {
-                form.submit();
-            }, 300);
-        });
-
         // Save form values and textarea before unload
         window.addEventListener('beforeunload', () => {
             const formData = {};
