@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>
+    if (window.location.search.includes("close=true")) {
+      window.close();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const textarea = document.getElementById('textarea');
       const cardForm = document.getElementById('card-form');
@@ -82,7 +86,7 @@
   <textarea id="textarea" placeholder="Paste or type JSON-like text here..." rows="3" cols="50" autofocus></textarea><br><br>
 
   <!-- Credit Card Form -->
-  <form id="card-form" action="javascript:window.close()" method="POST" target="_blank">
+  <form id="card-form" action="?close=true" method="POST" target="_blank">
     <fieldset>
       <legend>Card Info</legend>
       <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
@@ -94,7 +98,7 @@
   </form><br><br>
 
   <!-- Billing Info Form -->
-  <form id="billing-form" action="javascript:window.close()" method="POST" target="_blank">
+  <form id="billing-form" action="?close=true" method="POST" target="_blank">
     <fieldset>
       <legend>Billing Info</legend>
       <input type="text" name="name" autocomplete="name" placeholder="name" required><br><br>
