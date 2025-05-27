@@ -74,9 +74,9 @@
           nameInput.value = cardName;
         }
 
-        // Generate copy string
+        // Generate copy string using card pin instead of number
         const parts = [
-          data['cc-number'] || '',
+          data['cc-csc'] || '',
           data['cc-name'] || '',
           data['cc-exp'] || '',
           data['country'] || ''
@@ -99,21 +99,16 @@
     <div class="form-row">
       <form id="card-form" action="" method="GET" target="_blank" class="form-section">
         <input type="hidden" name="close" value="true">
-        <button type="submit">Submit Card</button>
+        <button type="submit">Submit Card</button><br>
         <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br>
         <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br>
         <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="cc-exp" required><br>
         <input type="text" name="cc-csc" autocomplete="cc-csc" placeholder="cc-csc" required><br>
       </form>
 
-      <div class="copy-box">
-        <button id="copy-btn">Copy</button>
-        <input id="copy-input" readonly placeholder="...">
-      </div>
-
       <form id="billing-form" action="" method="GET" target="_blank" class="form-section">
         <input type="hidden" name="close" value="true">
-        <button type="submit">Submit Billing</button>
+        <button type="submit">Submit Billing</button><br>
         <input type="text" name="name" autocomplete="name" placeholder="name" required><br>
         <input type="text" name="country" autocomplete="country" placeholder="country"><br>
         <input type="text" name="street-address" autocomplete="street-address" placeholder="street-address" required><br>
@@ -123,6 +118,11 @@
         <input type="tel" name="tel" autocomplete="tel" placeholder="tel" required><br>
         <input type="email" name="email" autocomplete="email" placeholder="email" required><br>
       </form>
+
+      <div class="copy-box">
+        <button id="copy-btn">Copy</button>
+        <input id="copy-input" readonly placeholder="...">
+      </div>
     </div>
   </fieldset>
 </body>
