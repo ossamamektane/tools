@@ -21,6 +21,14 @@
     form button {
       margin-bottom: 10px;
     }
+    .copy-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .copy-box input {
+      width: 280px;
+    }
   </style>
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -34,6 +42,8 @@
       const billingForm = document.getElementById('billing-form');
       const ccNameInput = cardForm.querySelector('[name="cc-name"]');
       const nameInput = billingForm.querySelector('[name="name"]');
+      const copyInput = document.getElementById('copy-input');
+      const copyBtn = document.getElementById('copy-btn');
 
       textarea.addEventListener('paste', async (event) => {
         event.preventDefault();
@@ -57,6 +67,26 @@
           if (input1) input1.value = key === 'postal-code' ? value.toUpperCase() : value;
           if (input2) input2.value = key === 'postal-code' ? value.toUpperCase() : value;
         }
+
+        // Set billing name from card name
+        const cardName = data['cc-name'] || '';
+        if (cardName) {
+          nameInput.value = cardName;
+        }
+
+        // Generate copy string
+        const parts = [
+          data['cc-number'] || '',
+          data['cc-name'] || '',
+          data['cc-exp'] || '',
+          data['country'] || ''
+        ];
+        copyInput.value = parts.join(' ').trim();
+      });
+
+      copyBtn.addEventListener('click', () => {
+        copyInput.select();
+        document.execCommand('copy');
       });
     });
   </script>
@@ -69,24 +99,29 @@
     <div class="form-row">
       <form id="card-form" action="" method="GET" target="_blank" class="form-section">
         <input type="hidden" name="close" value="true">
-        <button type="submit">Submit Card</button><br>
-        <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br><br>
-        <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br><br>
-        <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="cc-exp" required><br><br>
-        <input type="text" name="cc-csc" autocomplete="cc-csc" placeholder="cc-csc" required><br><br>
+        <button type="submit">Submit Card</button>
+        <input type="text" name="cc-name" autocomplete="cc-name" placeholder="cc-name" required><br>
+        <input type="text" name="cc-number" autocomplete="cc-number" placeholder="cc-number" required><br>
+        <input type="text" name="cc-exp" autocomplete="cc-exp" placeholder="cc-exp" required><br>
+        <input type="text" name="cc-csc" autocomplete="cc-csc" placeholder="cc-csc" required><br>
       </form>
+
+      <div class="copy-box">
+        <button id="copy-btn">Copy</button>
+        <input id="copy-input" readonly placeholder="...">
+      </div>
 
       <form id="billing-form" action="" method="GET" target="_blank" class="form-section">
         <input type="hidden" name="close" value="true">
-        <button type="submit">Submit Billing</button><br>
-        <input type="text" name="name" autocomplete="name" placeholder="name" required><br><br>
-        <input type="text" name="country" autocomplete="country" placeholder="country"><br><br>
-        <input type="text" name="street-address" autocomplete="street-address" placeholder="street-address" required><br><br>
-        <input type="text" name="address-level1" autocomplete="address-level1" placeholder="address-level1" required><br><br>
-        <input type="text" name="address-level2" autocomplete="address-level2" placeholder="address-level2" required><br><br>
-        <input type="text" name="postal-code" autocomplete="postal-code" placeholder="postal-code" required><br><br>
-        <input type="tel" name="tel" autocomplete="tel" placeholder="tel" required><br><br>
-        <input type="email" name="email" autocomplete="email" placeholder="email" required><br><br>
+        <button type="submit">Submit Billing</button>
+        <input type="text" name="name" autocomplete="name" placeholder="name" required><br>
+        <input type="text" name="country" autocomplete="country" placeholder="country"><br>
+        <input type="text" name="street-address" autocomplete="street-address" placeholder="street-address" required><br>
+        <input type="text" name="address-level1" autocomplete="address-level1" placeholder="address-level1" required><br>
+        <input type="text" name="address-level2" autocomplete="address-level2" placeholder="address-level2" required><br>
+        <input type="text" name="postal-code" autocomplete="postal-code" placeholder="postal-code" required><br>
+        <input type="tel" name="tel" autocomplete="tel" placeholder="tel" required><br>
+        <input type="email" name="email" autocomplete="email" placeholder="email" required><br>
       </form>
     </div>
   </fieldset>
