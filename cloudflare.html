@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <body>
+          <form id="aliasForm">
+                  <input type="text" id="fullname" placeholder="Full Name" required><br>
+                  <select id="prefix">
+                            <option value="sqsp" selected>sqsp</option>option>
+                            <option value="godaddy">godaddy</option>option>
+                            <option value="bluehost">bluehost</option>option>
+                  </select>select><br>
+                  <button type="submit">Generate</button>button>
+          </form>form>
+
+          <div>="re
+             box" hidden>
+                <p id="result"></p>p>
+                <button onclick="copyAlias()">Copy</button>button>
+          </div>
+    
+        <script>
+                const WORKER_URLRE/";
+
+                document.getElebmit', ISYNC FUNCTION (t full = document.getElemefault();
+                          const full = document.getElemefault();
+                  const full = document.getElemeftById('fullname').t full = document.getElementById('fullname').value.trim().replace(/\s+/g, ''ent.getElementBT FETCH(WORKER_E:RL    
+           onst  es = await fetch(WORKER_URL, {
+                       method: 'POST',
+                       headers[
+                                            method: 'POST',
+                                   headers: { 'Content-Type': 'application/json' },
+                                   body: JSON.stringify({
+                                                 firstName: full,
+                                                 lastName: '',
+                                                 domain: 'cartoonmask.com'
+                                   })
+                         });
+
+                  const data = await res.json();
+                  const alias = data.alias.replace(/^sqsp@/, `$('result').texIdontensultBox').hidden = fament.getElementById('resultBox').hidden = fament.getElementById('resultBox').hidden = false;
+                        });
+
+                              function copyAlias() {
+                                      const text = document.getElementById('result').textContent;
+                                              navigator.clipboard.writeText(text);
+                                                    }
+                                                        </script>
+    </body>
+</html>
+        </script></div>
+    </body>
+</html>
