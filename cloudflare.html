@@ -17,31 +17,34 @@
     </div>
 
     <script>
-      const WORKER_URL = "https://YOUR_WORKER_URL_HERE/";
+      const WORKER_URL = "https://custom.ottoberserk.workers.dev/";
 
-      document.getElementById('aliasForm').addEventListener('submit', async function (e) {
+      document.getElementById("aliasForm").addEventListener("submit", async function (e) {
         e.preventDefault();
-        const fullName = document.getElementById('fullname').value.trim().replace(/\s+/g, '').toLowerCase();
-        const prefix = document.getElementById('prefix').value;
 
-        const res = await fetch(https://custom.ottoberserk.workers.dev/, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const fullName = document.getElementById("fullname").value.trim().replace(/\s+/g, "").toLowerCase();
+        const prefix = document.getElementById("prefix").value;
+
+        if (!fullName) return;
+
+        const response = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             firstName: prefix,
             lastName: fullName,
-            domain: 'cartoonmask.com'
+            domain: "cartoonmask.com"
           })
         });
 
-        const data = await res.json();
-        document.getElementById('result').textContent = data.alias;
-        document.getElementById('resultBox').hidden = false;
+        const data = await response.json();
+        document.getElementById("result").textContent = data.alias;
+        document.getElementById("resultBox").hidden = false;
       });
 
       function copyAlias() {
-        const text = document.getElementById('result').textContent;
-        navigator.clipboard.writeText(text);
+        const alias = document.getElementById("result").textContent;
+        navigator.clipboard.writeText(alias);
       }
     </script>
   </body>
