@@ -142,7 +142,7 @@
         const slug = slugify(filename.replace(/\.[a-z]+$/, '')) || 'image';
         img.setAttribute('src', `https://${domain}/${slug}`);
         img.setAttribute('alt', 'icon');
-        redirectLines.push(`Redirect 302 /${slug} ${original}`);
+        redirectLines.push(`/${slug} ${original}`);
       });
 
       document.getElementById('redirectsText').value = redirectLines.join('\n');
