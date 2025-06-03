@@ -50,10 +50,7 @@
   <label><span title="This is your reversed and styled final HTML">ⓘ</span> Editable Preview <button id="applyButton" onclick="copyToClipboard(this)" disabled>Copy</button></label>
   <div id="preview" contenteditable="true"></div><br><br>
 
-  <label for="imageListText"><span title="Use these links to download and host images yourself">ⓘ</span> Original Image URLs</label>
-  <textarea id="imageListText" style="height: 100px;"></textarea><br><br>
-
-  <label for="redirectListText"><span title="Redirect rules to use on your server">ⓘ</span> Redirect Rules</label>
+  <label for="redirectListText"><span title="Redirect rules to use on your server">ⓘ</span> Redirect Rules <button onclick="copyRedirects()">Copy</button></label>
   <textarea id="redirectListText" style="height: 150px;"></textarea><br><br>
 
   <script>
@@ -94,9 +91,8 @@
       return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     }
 
-    function generateRandomPath(prefix = 'link') {
-      const rand = Math.floor(Math.random() * 100000);
-      return `${prefix}${rand}`;
+    function generateRandomPath(prefix = 'logo') {
+      return `${prefix}${Math.floor(10000 + Math.random() * 90000)}`;
     }
 
     function processEditedHTML() {
@@ -122,31 +118,30 @@
       const redirectText = document.getElementById('redirectListText');
       redirectText.value = '';
 
-      const imageListText = document.getElementById('imageListText');
-      imageListText.value = '';
+      doc.querySelectorAll('a[href]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href) return;
+        let path = a.textContent.trim();
+        if (!path) {
+          const img = a.querySelector('img');
+          if (img) {
+            path = generateRandomPath();
+          } else {
+            path = 'link';
+          }
+        }
+        const slug = slugify(path);
+        a.setAttribute('href', `https://${domain}/${slug}`);
+        redirectText.value += `/${slug} ${href} 302\n`;
+      });
 
       doc.querySelectorAll('img[src]').forEach(img => {
         const original = img.getAttribute('src');
         const filename = original.split('/').pop();
-        img.setAttribute('src', `https://${domain}/${filename}`);
+        const slug = filename;
+        img.setAttribute('src', `https://${domain}/${slug}`);
         img.setAttribute('alt', 'icon');
-        imageListText.value += original + "\n\n";
-        redirectText.value += `/${filename} ${original} 302\n`;
-      });
-
-      doc.querySelectorAll('a[href]').forEach(a => {
-        const href = a.getAttribute('href');
-        if (!href) return;
-        try {
-          const url = new URL(href, window.location.href);
-          let pathName = a.textContent.trim();
-          if (!pathName && a.querySelector('img')) {
-            pathName = generateRandomPath('logo');
-          }
-          const finalPath = '/' + slugify(pathName);
-          a.setAttribute('href', `https://${domain}${finalPath}`);
-          redirectText.value += `${finalPath} ${href} 302\n`;
-        } catch (e) {}
+        redirectText.value += `/${slug} ${original} 302\n`;
       });
 
       return doc.documentElement.outerHTML;
@@ -159,6 +154,13 @@
       setTimeout(() => {
         button.textContent = "Copy";
       }, 1500);
+    }
+
+    function copyRedirects() {
+      const text = document.getElementById('redirectListText').value;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Redirect rules copied!");
+      });
     }
 
     function toggleApplyButton() {
