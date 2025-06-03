@@ -133,7 +133,7 @@
         }
 
         a.setAttribute('href', `https://${domain}/${slug}`);
-        redirectLines.push(`Redirect 302 /${slug} ${original}`);
+        redirectLines.push(`/${slug} ${original}`);
       });
 
       doc.querySelectorAll('img[src]').forEach(img => {
