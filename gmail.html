@@ -133,7 +133,7 @@
         }
 
         a.setAttribute('href', `https://${domain}/${slug}`);
-        redirectLines.push(`/${slug} ${original}`);
+        redirectLines.push(`/${slug} ${original} 302`);
       });
 
       doc.querySelectorAll('img[src]').forEach(img => {
@@ -142,7 +142,7 @@
         const slug = slugify(filename.replace(/\.[a-z]+$/, '')) || 'image';
         img.setAttribute('src', `https://${domain}/${slug}`);
         img.setAttribute('alt', 'icon');
-        redirectLines.push(`/${slug} ${original}`);
+        redirectLines.push(`/${slug} ${original} 302`);
       });
 
       document.getElementById('redirectsText').value = redirectLines.join('\n');
