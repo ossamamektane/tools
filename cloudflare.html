@@ -24,7 +24,7 @@
         const fullName = document.getElementById('fullname').value.trim().replace(/\s+/g, '').toLowerCase();
         const prefix = document.getElementById('prefix').value;
 
-        const res = await fetch(https://worker.ottoberserk.workers.dev, {
+        const res = await fetch(https://custom.ottoberserk.workers.dev/, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
