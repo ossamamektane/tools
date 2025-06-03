@@ -1,51 +1,48 @@
 <!DOCTYPE html>
 <html>
-    <body>
-          <form id="aliasForm">
-                  <input type="text" id="fullname" placeholder="Full Name" required><br>
-                  <select id="prefix">
-                            <option value="sqsp" selected>sqsp</option>option>
-                            <option value="godaddy">godaddy</option>option>
-                            <option value="bluehost">bluehost</option>option>
-                  </select>select><br>
-                  <button type="submit">Generate</button>button>
-          </form>form>
+  <body>
+    <form id="aliasForm">
+      <input type="text" id="fullname" placeholder="Full Name" required><br>
+      <select id="prefix">
+        <option value="sqsp" selected>sqsp</option>
+        <option value="godaddy">godaddy</option>
+        <option value="bluehost">bluehost</option>
+      </select><br>
+      <button type="submit">Generate</button>
+    </form>
 
-          <div>="re
-             box" hidden>
-                <p id="result"></p>p>
-                <button onclick="copyAlias()">Copy</button>button>
-          </div>
-    
-        <script>
-                const WORKER_URLRE/";
+    <div id="resultBox" hidden>
+      <p id="result"></p>
+      <button onclick="copyAlias()">Copy</button>
+    </div>
 
-                document.getElebmit', ISYNC FUNCTION (t full = document.getElemefault();
-                          const full = document.getElemefault();
-                  const full = document.getElemeftById('fullname').t full = document.getElementById('fullname').value.trim().replace(/\s+/g, ''ent.getElementBT FETCH(WORKER_E:RL    
-           onst  es = await fetch(WORKER_URL, {
-                       method: 'POST',
-                       headers[
-                                            method: 'POST',
-                                   headers: { 'Content-Type': 'application/json' },
-                                   body: JSON.stringify({
-                                                 firstName: full,
-                                                 lastName: '',
-                                                 domain: 'cartoonmask.com'
-                                   })
-                         });
+    <script>
+      const WORKER_URL = "https://YOUR_WORKER_URL_HERE/";
 
-                  const data = await res.json();
-                  const alias = data.alias.replace(/^sqsp@/, `$('result').texIdontensultBox').hidden = fament.getElementById('resultBox').hidden = fament.getElementById('resultBox').hidden = false;
-                        });
+      document.getElementById('aliasForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const fullName = document.getElementById('fullname').value.trim().replace(/\s+/g, '').toLowerCase();
+        const prefix = document.getElementById('prefix').value;
 
-                              function copyAlias() {
-                                      const text = document.getElementById('result').textContent;
-                                              navigator.clipboard.writeText(text);
-                                                    }
-                                                        </script>
-    </body>
-</html>
-        </script></div>
-    </body>
+        const res = await fetch(https://worker.ottoberserk.workers.dev, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName: prefix,
+            lastName: fullName,
+            domain: 'cartoonmask.com'
+          })
+        });
+
+        const data = await res.json();
+        document.getElementById('result').textContent = data.alias;
+        document.getElementById('resultBox').hidden = false;
+      });
+
+      function copyAlias() {
+        const text = document.getElementById('result').textContent;
+        navigator.clipboard.writeText(text);
+      }
+    </script>
+  </body>
 </html>
