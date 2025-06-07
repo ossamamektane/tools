@@ -38,9 +38,6 @@
   <label for="senderInput"><span title="The visible name in email 'From' field">ⓘ</span> Sender Name</label>
   <input type="text" id="senderInput" value="no-reply"><br><br>
 
-  <label for="fromInput"><span title="Generated using your domain and sender name">ⓘ</span> From</label>
-  <input type="text" id="fromInput" value=""><br><br>
-
   <label for="subjectInput"><span title="The email subject line users see">ⓘ</span> Subject <button id="subjectBtn" onclick="copyReversedSubject()">Copy</button></label>
   <input type="text" id="subjectInput" placeholder="Enter your subject here..." oninput="toggleApplyButton()"><br><br>
 
@@ -52,136 +49,151 @@
 
   <label for="redirectListText"><span title="Redirect rules to use on your server">ⓘ</span> Redirect Rules <button onclick="copyRedirects()">Copy</button></label>
   <textarea id="redirectListText" style="height: 150px;"></textarea><br><br>
+<script>
+  function reverseWord(word) {
+    return word.split('').reverse().join('');
+  }
 
-  <script>
-    function reverseWord(word) {
-      return word.split('').reverse().join('');
-    }
+  function wrapWord(word) {
+    return `<span style=\"display:inline-block;direction:rtl;unicode-bidi:bidi-override;text-align:left;\">${reverseWord(word)}</span>`;
+  }
 
-    function wrapWord(word) {
-      return `<span style=\"display:inline-block;direction:rtl;unicode-bidi:bidi-override;text-align:left;\">${reverseWord(word)}</span>`;
-    }
+  function reverseTextContent(text) {
+    return text.split(/(\s+)/).map(token => {
+      return token.trim().length > 0 ? wrapWord(token) : token;
+    }).join('');
+  }
 
-    function reverseTextContent(text) {
-      return text.split(/(\s+)/).map(token => {
-        return token.trim().length > 0 ? wrapWord(token) : token;
-      }).join('');
-    }
+  function updateFromAddress() {
+    const domain = document.getElementById('domainInput').value.trim();
+    processEditedHTML();
+  }
 
-    function updateFromAddress() {
-      const domain = document.getElementById('domainInput').value.trim();
-      const fromInput = document.getElementById('fromInput');
-      fromInput.value = domain ? `no-reply@${domain}` : '';
+  function loadHtmlFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      document.getElementById('preview').innerHTML = e.target.result;
+      document.getElementById('preview').style.minHeight = '200px';
       processEditedHTML();
+    };
+    reader.readAsText(file);
+  }
+
+  function slugify(text) {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  function generateRandomPath(prefix = 'logo') {
+    return `${prefix}${Math.floor(10000 + Math.random() * 90000)}`;
+  }
+
+  function generateRandomQuery(length = 500) {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+    let result = '';
+    const array = new Uint32Array(length);
+    crypto.getRandomValues(array);
+    for (let i = 0; i < length; i++) {
+      result += charset[array[i] % charset.length];
     }
+    return result;
+  }
 
-    function loadHtmlFile(input) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        document.getElementById('preview').innerHTML = e.target.result;
-        document.getElementById('preview').style.minHeight = '200px';
-        processEditedHTML();
-      };
-      reader.readAsText(file);
-    }
+  function processEditedHTML() {
+    const domain = document.getElementById('domainInput').value.trim();
+    const html = document.getElementById('preview').innerHTML;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
 
-    function slugify(text) {
-      return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    }
+    // Remove <title> tag if present
+    const title = doc.querySelector('title');
+    if (title) title.remove();
 
-    function generateRandomPath(prefix = 'logo') {
-      return `${prefix}${Math.floor(10000 + Math.random() * 90000)}`;
-    }
-
-    function processEditedHTML() {
-      const domain = document.getElementById('domainInput').value.trim();
-      const html = document.getElementById('preview').innerHTML;
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      const title = doc.querySelector('title');
-      if (title) title.remove();
-
-      doc.body.querySelectorAll('p, td, div, span, a').forEach(el => {
-        el.childNodes.forEach((node, index) => {
-          if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length > 0 && !node.nodeValue.trim().startsWith("http")) {
-            const spanWrapped = reverseTextContent(node.nodeValue);
-            const container = document.createElement('span');
-            container.innerHTML = spanWrapped;
-            el.replaceChild(container, node);
-          }
-        });
-      });
-
-      const redirectText = document.getElementById('redirectListText');
-      redirectText.value = '';
-
-      doc.querySelectorAll('a[href]').forEach(a => {
-        const href = a.getAttribute('href');
-        if (!href) return;
-        let path = a.textContent.trim();
-        if (!path) {
-          const img = a.querySelector('img');
-          if (img) {
-            path = generateRandomPath();
-          } else {
-            path = 'link';
-          }
+    doc.body.querySelectorAll('p, td, div, span, a').forEach(el => {
+      el.childNodes.forEach((node, index) => {
+        if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length > 0 && !node.nodeValue.trim().startsWith("http")) {
+          const spanWrapped = reverseTextContent(node.nodeValue);
+          const container = document.createElement('span');
+          container.innerHTML = spanWrapped;
+          el.replaceChild(container, node);
         }
-        const slug = slugify(path);
-        a.setAttribute('href', `https://${domain}/${slug}`);
-        redirectText.value += `/${slug} ${href} 302\n`;
       });
+    });
 
-      doc.querySelectorAll('img[src]').forEach(img => {
-        const original = img.getAttribute('src');
-        const filename = original.split('/').pop();
-        const slug = filename;
-        img.setAttribute('src', `https://${domain}/${slug}`);
-        img.setAttribute('alt', 'icon');
-        redirectText.value += `/${slug} ${original} 302\n`;
-      });
+    const redirectText = document.getElementById('redirectListText');
+    redirectText.value = '';
 
-      return doc.documentElement.outerHTML;
-    }
+    doc.querySelectorAll('a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if (!href) return;
+      let path = a.textContent.trim();
+      if (!path) {
+        const img = a.querySelector('img');
+        if (img) {
+          path = generateRandomPath();
+        } else {
+          path = 'link';
+        }
+      }
+      const slug = slugify(path);
+      const randomQuery = generateRandomQuery();
+      a.setAttribute('href', `https://${domain}/${slug}?${randomQuery}`);
+      redirectText.value += `/${slug} ${href} 302\n`; // query string is not included in redirect rule
+    });
 
-    function copyToClipboard(button) {
-      const result = processEditedHTML();
-      navigator.clipboard.writeText(result);
+    doc.querySelectorAll('img[src]').forEach(img => {
+      const original = img.getAttribute('src');
+      const filename = original.split('/').pop();
+      const slug = filename;
+      img.setAttribute('src', `https://${domain}/${slug}`);
+      img.removeAttribute('alt'); // REMOVE alt completely
+      redirectText.value += `/${slug} ${original} 302\n`;
+    });
+
+    return doc.documentElement.outerHTML;
+  }
+
+  function copyToClipboard(button) {
+    const result = processEditedHTML();
+    navigator.clipboard.writeText(result);
+    button.textContent = "Copied";
+    setTimeout(() => {
+      button.textContent = "Copy";
+    }, 1500);
+  }
+
+  function copyRedirects(button) {
+    const text = document.getElementById('redirectListText').value;
+    navigator.clipboard.writeText(text).then(() => {
       button.textContent = "Copied";
       setTimeout(() => {
         button.textContent = "Copy";
       }, 1500);
-    }
+    });
+  }
 
-    function copyRedirects() {
-      const text = document.getElementById('redirectListText').value;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Redirect rules copied!");
-      });
-    }
+  function toggleApplyButton() {
+    const subject = document.getElementById('subjectInput').value.trim();
+    const button = document.getElementById('applyButton');
+    button.disabled = subject === '';
+  }
 
-    function toggleApplyButton() {
-      const subject = document.getElementById('subjectInput').value.trim();
-      const button = document.getElementById('applyButton');
-      button.disabled = subject === '';
-    }
+  function copyReversedSubject() {
+    const input = document.getElementById('subjectInput').value.trim();
+    const btn = document.getElementById('subjectBtn');
+    if (!input) return;
+    const reversed = input.split('').reverse().join('');
+    const rlo = "‮";
+    const result = rlo + reversed;
+    navigator.clipboard.writeText(result);
+    btn.textContent = "Copied";
+    setTimeout(() => {
+      btn.textContent = "Copy";
+    }, 1500);
+  }
+</script>
 
-    function copyReversedSubject() {
-      const input = document.getElementById('subjectInput').value.trim();
-      const btn = document.getElementById('subjectBtn');
-      if (!input) return;
-      const reversed = input.split('').reverse().join('');
-      const rlo = "‮";
-      const result = rlo + reversed;
-      navigator.clipboard.writeText(result);
-      btn.textContent = "Copied";
-      setTimeout(() => {
-        btn.textContent = "Copy";
-      }, 1500);
-    }
-  </script>
+
 </body>
 </html>
