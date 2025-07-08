@@ -32,9 +32,6 @@
   </style>
 </head>
 <body>
-  <label for="domainInput"><span title="Used to replace links and images with your domain">ⓘ</span> Domain</label>
-  <input type="text" id="domainInput" placeholder="yourdomain.com" oninput="updateFromAddress()"><br><br>
-
   <label for="senderInput"><span title="The visible name in email 'From' field">ⓘ</span> Sender Name</label>
   <input type="text" id="senderInput" value="no-reply"><br><br>
 
@@ -47,8 +44,6 @@
   <label><span title="This is your reversed and styled final HTML">ⓘ</span> Editable Preview <button id="applyButton" onclick="copyToClipboard(this)" disabled>Copy</button></label>
   <div id="preview" contenteditable="true"></div><br><br>
 
-  <label for="redirectListText"><span title="Redirect rules to use on your server">ⓘ</span> Redirect Rules <button onclick="copyRedirects()">Copy</button></label>
-  <textarea id="redirectListText" style="height: 150px;"></textarea><br><br>
 <script>
   function reverseWord(word) {
     return word.split('').reverse().join('');
@@ -64,11 +59,6 @@
     }).join('');
   }
 
-  function updateFromAddress() {
-    const domain = document.getElementById('domainInput').value.trim();
-    processEditedHTML();
-  }
-
   function loadHtmlFile(input) {
     const file = input.files[0];
     if (!file) return;
@@ -81,32 +71,11 @@
     reader.readAsText(file);
   }
 
-  function slugify(text) {
-    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  }
-
-  function generateRandomPath(prefix = 'logo') {
-    return `${prefix}${Math.floor(10000 + Math.random() * 90000)}`;
-  }
-
-  function generateRandomQuery(length = 500) {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
-    let result = '';
-    const array = new Uint32Array(length);
-    crypto.getRandomValues(array);
-    for (let i = 0; i < length; i++) {
-      result += charset[array[i] % charset.length];
-    }
-    return result;
-  }
-
   function processEditedHTML() {
-    const domain = document.getElementById('domainInput').value.trim();
     const html = document.getElementById('preview').innerHTML;
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    // Remove <title> tag if present
     const title = doc.querySelector('title');
     if (title) title.remove();
 
@@ -121,36 +90,6 @@
       });
     });
 
-    const redirectText = document.getElementById('redirectListText');
-    redirectText.value = '';
-
-    doc.querySelectorAll('a[href]').forEach(a => {
-      const href = a.getAttribute('href');
-      if (!href) return;
-      let path = a.textContent.trim();
-      if (!path) {
-        const img = a.querySelector('img');
-        if (img) {
-          path = generateRandomPath();
-        } else {
-          path = 'link';
-        }
-      }
-      const slug = slugify(path);
-      const randomQuery = generateRandomQuery();
-      a.setAttribute('href', `https://${domain}/${slug}?${randomQuery}`);
-      redirectText.value += `/${slug} ${href} 302\n`; // query string is not included in redirect rule
-    });
-
-    doc.querySelectorAll('img[src]').forEach(img => {
-      const original = img.getAttribute('src');
-      const filename = original.split('/').pop();
-      const slug = filename;
-      img.setAttribute('src', `https://${domain}/${slug}`);
-      img.removeAttribute('alt'); // REMOVE alt completely
-      redirectText.value += `/${slug} ${original} 302\n`;
-    });
-
     return doc.documentElement.outerHTML;
   }
 
@@ -161,16 +100,6 @@
     setTimeout(() => {
       button.textContent = "Copy";
     }, 1500);
-  }
-
-  function copyRedirects(button) {
-    const text = document.getElementById('redirectListText').value;
-    navigator.clipboard.writeText(text).then(() => {
-      button.textContent = "Copied";
-      setTimeout(() => {
-        button.textContent = "Copy";
-      }, 1500);
-    });
   }
 
   function toggleApplyButton() {
@@ -193,7 +122,5 @@
     }, 1500);
   }
 </script>
-
-
 </body>
 </html>
