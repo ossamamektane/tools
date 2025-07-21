@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Authenticator</title>
+</head>
+<body style="margin: 0; padding: 20px; font-family: sans-serif;">
+
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+
+    <div style="display: flex; gap: 10px;">
+      <input type="text" id="search" placeholder="Search email..." oninput="renderFiltered()" style="width: 250px; height: 30px;">
+      <input type="text" id="qrInput" placeholder="Paste QR base64 here..." onpaste="handlePaste()" style="width: 250px; height: 30px;">
+    </div>
+
+    <div id="accounts" style="width: 100%; max-width: 600px;"></div>
+
+  </div>
+
+  <script>
+    const GIST_URL = "https://gist.githubusercontent.com/ottoberserk/8e7f6bfde034e89e6f29bc0081cc2e38/raw";
+    const container = document.getElementById("accounts");
+    const searchInput = document.getElementById("search");
+    const qrInput = document.getElementById("qrInput");
+    let accounts = [];
+
+    function base32Decode(input) {
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+      let bits = "";
+      input = input.toUpperCase().replace(/=+$/, '');
+      for (const char of input) {
+        const val = alphabet.indexOf(char);
+        if (val === -1) throw new Error("Invalid base32 character");
+        bits += val.toString(2).padStart(5, '0');
+      }
+      const bytes = [];
+      for (let i = 0; i + 8 <= bits.length; i += 8) {
+        bytes.push(parseInt(bits.slice(i, i + 8), 2));
+      }
+      return new Uint8Array(bytes);
+    }
+
+    function intToBytes(num) {
+      const arr = new Uint8Array(8);
+      for (let i = 7; i >= 0; i--) {
+        arr[i] = num & 0xff;
+        num >>= 8;
+      }
+      return arr;
+    }
+
+    async function generateTOTP(secret) {
+      const keyData = base32Decode(secret);
+      const time = Math.floor(Date.now() / 1000 / 30);
+      const counter = intToBytes(time);
+      const key = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+      const signature = await crypto.subtle.sign({ name: "HMAC" }, key, counter);
+      const hmac = new Uint8Array(signature);
+      const offset = hmac[hmac.length - 1] & 0x0f;
+      const code = ((hmac[offset] & 0x7f) << 24) |
+                   ((hmac[offset + 1] & 0xff) << 16) |
+                   ((hmac[offset + 2] & 0xff) << 8) |
+                   (hmac[offset + 3] & 0xff);
+      return (code % 1_000_000).toString().padStart(6, "0");
+    }
+
+    function parseOtpauthURL(url) {
+      const labelRaw = decodeURIComponent(url.split("/")[3].split("?")[0] || "Account");
+      const label = labelRaw.replace("PayPal:", "PayPal: ");
+      const secret = (url.match(/secret=([^&]+)/) || [])[1] || "";
+      return { label, secret };
+    }
+
+    const elementMap = new Map();
+
+    async function renderFiltered() {
+      const search = searchInput.value.toLowerCase();
+      for (const acc of accounts) {
+        const id = acc.label;
+        if (!id.toLowerCase().includes(search)) {
+          if (elementMap.has(id)) elementMap.get(id).style.display = "none";
+          continue;
+        }
+
+        const code = await generateTOTP(acc.secret);
+        const remaining = 30 - Math.floor((Date.now() / 1000) % 30);
+
+        if (!elementMap.has(id)) {
+          const box = document.createElement("div");
+          box.style.border = "1px solid #ccc";
+          box.style.padding = "10px";
+          box.style.marginBottom = "10px";
+          box.style.textAlign = "center";
+
+          box.innerHTML = `
+            <p><b>${acc.label}</b></p>
+            <p>Code: <span class="code"></span></p>
+            <p>Expires in: <span class="time"></span> seconds</p>
+            <button>Copy</button>
+          `;
+          const codeSpan = box.querySelector(".code");
+          const timeSpan = box.querySelector(".time");
+          const button = box.querySelector("button");
+          button.onclick = () => navigator.clipboard.writeText(codeSpan.textContent);
+          elementMap.set(id, box);
+          container.appendChild(box);
+        }
+
+        const el = elementMap.get(id);
+        el.style.display = "block";
+        el.querySelector(".code").textContent = code;
+        el.querySelector(".time").textContent = remaining;
+      }
+    }
+
+    async function init() {
+      try {
+        const res = await fetch(GIST_URL + "?" + Date.now(), { cache: "no-store" });
+        const text = await res.text();
+        accounts = text.trim().split("\n").filter(line => line.startsWith("otpauth://")).map(parseOtpauthURL);
+        await renderFiltered();
+        setInterval(renderFiltered, 1000);
+      } catch (err) {
+        document.body.innerHTML += "<p>❌ Failed to load TOTP data.</p>";
+        console.error(err);
+      }
+    }
+
+    init();
+
+    function handlePaste() {
+      setTimeout(() => decodeQR(), 100);
+    }
+
+    async function decodeQR() {
+      const input = qrInput.value.trim();
+
+      if (!input.startsWith("data:img/png;base64,") && !input.startsWith("data:image/png;base64,")) {
+        alert("Invalid base64 image. Must start with data:image/png;base64 or data:img/png;base64");
+        return;
+      }
+
+      const fixed = input.replace(/^data:img\/png/, 'data:image/png');
+      const encoded = encodeURIComponent(fixed);
+      const zxingURL = `https://zxing.org/w/decode?u=${encoded}`;
+      const proxyURL = `https://api.allorigins.win/get?url=${encodeURIComponent(zxingURL)}`;
+
+      try {
+        const res = await fetch(proxyURL);
+        const json = await res.json();
+        const html = json.contents;
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const preTags = doc.querySelectorAll("pre");
+
+        let result = null;
+        for (const pre of preTags) {
+          const text = pre.textContent.trim();
+          if (text.startsWith("otpauth://")) {
+            result = text;
+            break;
+          }
+        }
+
+        if (result) {
+          qrInput.value = result;
+          navigator.clipboard.writeText(result);
+        } else {
+          alert("❌ No otpauth:// found in result.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Error decoding QR.");
+      }
+    }
+  </script>
+
+</body>
+</html>
