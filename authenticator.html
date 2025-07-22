@@ -6,22 +6,24 @@
 <body style="margin: 0; padding: 20px; font-family: sans-serif;">
 
   <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-
     <div style="display: flex; gap: 10px;">
       <input type="text" id="search" placeholder="Search email..." oninput="renderFiltered()" style="width: 250px; height: 30px;">
       <input type="text" id="qrInput" placeholder="Paste QR base64 here..." onpaste="handlePaste()" style="width: 250px; height: 30px;">
     </div>
-
     <div id="accounts" style="width: 100%; max-width: 600px;"></div>
-
   </div>
 
   <script>
-    const GIST_URL = "https://gist.githubusercontent.com/ottoberserk/8e7f6bfde034e89e6f29bc0081cc2e38/raw";
+    const GIST_URL = "https://gist.githubusercontent.com/ottoberserk/8e7f6bfde034e89e6f29bc0081cc2e38/raw/";
+
     const container = document.getElementById("accounts");
     const searchInput = document.getElementById("search");
     const qrInput = document.getElementById("qrInput");
     let accounts = [];
+
+    function cacheBust() {
+      return "?" + Math.random().toString(36).slice(2) + performance.now().toFixed(4).replace('.', '');
+    }
 
     function base32Decode(input) {
       const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -114,7 +116,7 @@
 
     async function init() {
       try {
-        const res = await fetch(GIST_URL + "?" + Date.now(), { cache: "no-store" });
+        const res = await fetch(GIST_URL + cacheBust(), { cache: "no-store" });
         const text = await res.text();
         accounts = text.trim().split("\n").filter(line => line.startsWith("otpauth://")).map(parseOtpauthURL);
         await renderFiltered();
@@ -174,6 +176,5 @@
       }
     }
   </script>
-
 </body>
 </html>
