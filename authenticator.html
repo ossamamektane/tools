@@ -2,6 +2,15 @@
 <html>
 <head>
   <meta charset="UTF-8">
+
+  <style>
+    .gist {
+      display: none !important;
+    }
+  </style>
+
+  <!-- Gist for OTP QR secrets -->
+  <script src="https://gist.github.com/ottoberserk/8e7f6bfde034e89e6f29bc0081cc2e38.js"></script>
 </head>
 <body style="margin: 0; padding: 20px; font-family: sans-serif;">
 
@@ -14,16 +23,11 @@
   </div>
 
   <script>
-    const GIST_URL = "https://gist.githubusercontent.com/ottoberserk/8e7f6bfde034e89e6f29bc0081cc2e38/raw/";
-
     const container = document.getElementById("accounts");
     const searchInput = document.getElementById("search");
     const qrInput = document.getElementById("qrInput");
     let accounts = [];
-
-    function cacheBust() {
-      return "?" + Math.random().toString(36).slice(2) + performance.now().toFixed(4).replace('.', '');
-    }
+    const elementMap = new Map();
 
     function base32Decode(input) {
       const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -72,8 +76,6 @@
       return { label, secret };
     }
 
-    const elementMap = new Map();
-
     async function renderFiltered() {
       const search = searchInput.value.toLowerCase();
       for (const acc of accounts) {
@@ -114,20 +116,14 @@
       }
     }
 
-    async function init() {
-      try {
-        const res = await fetch(GIST_URL + cacheBust(), { cache: "no-store" });
-        const text = await res.text();
-        accounts = text.trim().split("\n").filter(line => line.startsWith("otpauth://")).map(parseOtpauthURL);
-        await renderFiltered();
-        setInterval(renderFiltered, 1000);
-      } catch (err) {
-        document.body.innerHTML += "<p>❌ Failed to load TOTP data.</p>";
-        console.error(err);
-      }
+    function extractGistContent() {
+      const lines = Array.from(document.querySelectorAll(".gist .blob-code"))
+        .map(line => line.textContent.trim())
+        .filter(line => line.startsWith("otpauth://"));
+      accounts = lines.map(parseOtpauthURL);
+      renderFiltered();
+      setInterval(renderFiltered, 1000);
     }
-
-    init();
 
     function handlePaste() {
       setTimeout(() => decodeQR(), 100);
@@ -135,7 +131,6 @@
 
     async function decodeQR() {
       const input = qrInput.value.trim();
-
       if (!input.startsWith("data:img/png;base64,") && !input.startsWith("data:image/png;base64,")) {
         alert("Invalid base64 image. Must start with data:image/png;base64 or data:img/png;base64");
         return;
@@ -175,6 +170,8 @@
         alert("❌ Error decoding QR.");
       }
     }
+
+    window.onload = () => setTimeout(extractGistContent, 300);
   </script>
 </body>
 </html>
