@@ -163,11 +163,11 @@
           qrInput.value = result;
           navigator.clipboard.writeText(result);
         } else {
-          alert("❌ No otpauth:// found in result.");
+          alert("No otpauth found in result.");
         }
       } catch (err) {
         console.error(err);
-        alert("❌ Error decoding QR.");
+        alert("Error decoding QR.");
       }
     }
 
