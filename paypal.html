@@ -4,20 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    .gist {
-      display: none !important;
-    }
-  </style>
-
-  <!-- Gist for Email -->
-  <script src="https://gist.github.com/ottoberserk/45e999163d7619c6e6b87b177bad2b3a.js"></script>
-  <!-- Gist for Amount -->
-  <script src="https://gist.github.com/ottoberserk/13f840dfdd8986b8a8b216f6d3ae606c.js"></script>
-  <!-- Gist for Product Names -->
-  <script src="https://gist.github.com/ottoberserk/e2f6822b1cdec7c15daaf92c6781ab20.js"></script>
-
   <script>
+    const GIST_EMAIL = "https://gist.githubusercontent.com/ottoberserk/45e999163d7619c6e6b87b177bad2b3a/raw";
+    const GIST_AMOUNT = "https://gist.githubusercontent.com/ottoberserk/13f840dfdd8986b8a8b216f6d3ae606c/raw";
+    const GIST_PRODUCTS = "https://gist.githubusercontent.com/ottoberserk/e2f6822b1cdec7c15daaf92c6781ab20/raw";
+
     let productNames = [];
     let currentIndex = 0;
 
@@ -68,31 +59,30 @@
       document.getElementById('cancelReturnUrl').value = `https://example.com/?amount=${amount}&date=${formattedDate}&time=${formattedTime}&payment_status=failed`;
     }
 
-    function initializeForm() {
+    async function fetchGistLines(url) {
+      const res = await fetch(url + "?" + Date.now(), { cache: "no-store" });
+      const text = await res.text();
+      return text.trim().split("\n").map(x => x.trim()).filter(Boolean);
+    }
+
+    async function initializeForm() {
       const autoSubmitParam = getParameterByName('auto');
 
-      const waitForGists = () => {
-        const emailEl = document.querySelector('.gist:nth-of-type(1) .blob-code');
-        const amountEl = document.querySelector('.gist:nth-of-type(2) .blob-code');
-        const productLines = Array.from(document.querySelectorAll('.gist:nth-of-type(3) .blob-code'));
+      const [emailLines, amountLines, productLines] = await Promise.all([
+        fetchGistLines(GIST_EMAIL),
+        fetchGistLines(GIST_AMOUNT),
+        fetchGistLines(GIST_PRODUCTS)
+      ]);
 
-        if (emailEl && amountEl && productLines.length > 0) {
-          document.getElementById('gistInput').value = emailEl.textContent.trim();
-          document.getElementById('amount').value = parseFloat(amountEl.textContent.trim()).toFixed(2);
+      document.getElementById('gistInput').value = emailLines[0];
+      document.getElementById('amount').value = parseFloat(amountLines[0]).toFixed(2);
+      productNames = productLines;
+      shuffle(productNames);
+      setOrderAndItemNumbers();
 
-          productNames = productLines.map(line => line.textContent.trim()).filter(Boolean);
-          shuffle(productNames);
-
-          setOrderAndItemNumbers();
-          if (autoSubmitParam === 'true') {
-            document.forms[0].submit();
-          }
-        } else {
-          setTimeout(waitForGists, 100);
-        }
-      };
-
-      waitForGists();
+      if (autoSubmitParam === 'true') {
+        document.forms[0].submit();
+      }
     }
 
     window.onload = initializeForm;
@@ -105,7 +95,7 @@
 
     <label for="amount">Amount:</label><br>
     <input type="number" id="amount" name="amount" step="0.01" value="1.00" required><br><br>
-     
+
     <label for="itemName">Item Name:</label><br>
     <input type="text" id="itemName" name="item_name" required readonly><br><br>
 
