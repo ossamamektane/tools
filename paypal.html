@@ -14,114 +14,12 @@
   <script src="https://gist.github.com/ottoberserk/45e999163d7619c6e6b87b177bad2b3a.js"></script>
   <!-- Gist for Amount -->
   <script src="https://gist.github.com/ottoberserk/13f840dfdd8986b8a8b216f6d3ae606c.js"></script>
+  <!-- Gist for Product Names -->
+  <script src="https://gist.github.com/ottoberserk/e2f6822b1cdec7c15daaf92c6781ab20.js"></script>
 
   <script>
-    let productNames = [
-      "E-book: Advanced Excel for Data Analysis - Digital Edition",
-      "E-book: Ultimate Guide to Remote Work - Digital Edition",
-      "E-book: Productivity Habits of High Achievers - Digital Edition",
-      "E-book: Freelance Writing Mastery - Digital Edition",
-      "E-book: Building a Personal Brand Online - Digital Edition",
-      "E-book: Mastering Canva Design - Digital Edition",
-      "E-book: Starting a YouTube Channel - Digital Edition",
-      "E-book: Branding for Creatives - Digital Edition",
-      "E-book: Email List Growth Hacks - Digital Edition",
-      "E-book: Canva Templates for Social Media - Digital Edition",
-      "E-book: Dropshipping Business Blueprint - Digital Edition",
-      "E-book: Instagram Growth Strategy - Digital Edition",
-      "E-book: Passive Income Through Affiliate Marketing - Digital Edition",
-      "E-book: Write and Publish Your First E-book - Digital Edition",
-      "E-book: Digital Marketing for Coaches - Digital Edition",
-      "E-book: Pinterest for Bloggers - Digital Edition",
-      "E-book: Time Management for Solopreneurs - Digital Edition",
-      "E-book: Setting Up Your Digital Agency - Digital Edition",
-      "E-book: Graphic Design for Beginners - Digital Edition",
-      "E-book: Digital Resume Templates - Digital Edition",
-      "E-book: Work From Home Success Plan - Digital Edition",
-      "E-book: YouTube Monetization Guide - Digital Edition",
-      "E-book: Becoming a Social Media Manager - Digital Edition",
-      "E-book: TikTok Marketing Tips - Digital Edition",
-      "E-book: Etsy Shop Starter Guide - Digital Edition",
-      "E-book: Selling Art Online - Digital Edition",
-      "E-book: Digital Planners and How to Create Them - Digital Edition",
-      "E-book: Writing Viral Content - Digital Edition",
-      "E-book: Facebook Ads Made Simple - Digital Edition",
-      "E-book: Creating an Online Membership Site - Digital Edition",
-      "E-book: LinkedIn for Career Growth - Digital Edition",
-      "E-book: Tech Tools for Entrepreneurs - Digital Edition",
-      "E-book: Build Your First Website - Digital Edition",
-      "E-book: Web Design Basics with Figma - Digital Edition",
-      "E-book: Copywriting for Beginners - Digital Edition",
-      "E-book: Creating Digital Printables - Digital Edition",
-      "E-book: Virtual Event Planning - Digital Edition",
-      "E-book: Client Management Systems - Digital Edition",
-      "E-book: Freelance Contracts and Templates - Digital Edition",
-      "E-book: Setting Prices for Digital Services - Digital Edition",
-      "E-book: Create Your Online Portfolio - Digital Edition",
-      "E-book: Sell Courses on Teachable - Digital Edition",
-      "E-book: Digital Tools for Teachers - Digital Edition",
-      "E-book: Notion Templates and Use Cases - Digital Edition",
-      "E-book: Start Your Own Podcast - Digital Edition",
-      "E-book: Creating a Niche Blog - Digital Edition",
-      "E-book: Repurpose Content Like a Pro - Digital Edition",
-      "E-book: Email Funnels for Sales - Digital Edition",
-      "E-book: Automating Your Side Hustle - Digital Edition",
-      "E-book: Trello for Business Management - Digital Edition",
-      "E-book: Digital Branding for Startups - Digital Edition",
-      "E-book: E-book Design in Canva - Digital Edition",
-      "E-book: Financial Planning for Freelancers - Digital Edition",
-      "E-book: Business Mindset Shifts - Digital Edition",
-      "E-book: Etsy SEO Crash Course - Digital Edition",
-      "E-book: Lead Magnet Creation Guide - Digital Edition",
-      "E-book: Crafting the Perfect Sales Page - Digital Edition",
-      "E-book: Zoom for Business Use - Digital Edition",
-      "E-book: Setting Boundaries as a Freelancer - Digital Edition",
-      "E-book: Build Your First Newsletter - Digital Edition",
-      "E-book: Digital Templates You Can Sell - Digital Edition",
-      "E-book: Finding Freelance Gigs Online - Digital Edition",
-      "E-book: Print-on-Demand Explained - Digital Edition",
-      "E-book: Using AI for Business Growth - Digital Edition",
-      "E-book: Tools for Online Collaboration - Digital Edition",
-      "E-book: Building Authority on Medium - Digital Edition",
-      "E-book: Mastering Digital Planners - Digital Edition",
-      "E-book: Automation Tools for Small Biz - Digital Edition",
-      "E-book: Canva for Ebook Design - Digital Edition",
-      "E-book: Creating Passive Income Streams - Digital Edition",
-      "E-book: How to Sell on Gumroad - Digital Edition",
-      "E-book: Building a Shopify Store - Digital Edition",
-      "E-book: Mindset for Creative Entrepreneurs - Digital Edition",
-      "E-book: Affiliate Marketing for Beginners - Digital Edition",
-      "E-book: Content Strategy Blueprint - Digital Edition",
-      "E-book: Low Content Book Ideas - Digital Edition",
-      "E-book: Ebook Launch Checklist - Digital Edition",
-      "E-book: Productivity Tools for Creators - Digital Edition",
-      "E-book: Client Onboarding Templates - Digital Edition",
-      "E-book: Selling Services on Fiverr - Digital Edition",
-      "E-book: How to Build a Sales Funnel - Digital Edition",
-      "E-book: Create a Mini Course - Digital Edition",
-      "E-book: Blogging as a Business - Digital Edition",
-      "E-book: Build Your Instagram Brand - Digital Edition",
-      "E-book: Passive Income Through Notion - Digital Edition",
-      "E-book: Sell Your Skills Online - Digital Edition",
-      "E-book: Branding Your Digital Products - Digital Edition",
-      "E-book: Google Workspace for Solopreneurs - Digital Edition",
-      "E-book: Launching a Digital Product - Digital Edition",
-      "E-book: Social Proof for Digital Sales - Digital Edition",
-      "E-book: Goal Setting for Entrepreneurs - Digital Edition",
-      "E-book: Monthly Planner Templates - Digital Edition",
-      "E-book: Digital Product Pricing Strategies - Digital Edition",
-      "E-book: How to Use Kajabi - Digital Edition",
-      "E-book: Create and Sell Templates - Digital Edition",
-      "E-book: DIY Marketing Funnels - Digital Edition",
-      "E-book: ConvertKit for Beginners - Digital Edition",
-      "E-book: Branding Your Etsy Shop - Digital Edition",
-      "E-book: Online Service Packages - Digital Edition",
-      "E-book: Master Your Niche Market - Digital Edition",
-      "E-book: Building Your First Online Brand - Digital Edition",
-      "E-book: Digital Marketing Trends 2025 - Digital Edition",
-      "E-book: Easy Ebooks for Passive Income - Digital Edition",
-      "E-book: The Creative's Online Toolkit - Digital Edition"
-    ];
+    let productNames = [];
+    let currentIndex = 0;
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -135,9 +33,6 @@
         array.push(...array.splice(0, shift));
       }
     }
-
-    shuffle(productNames);
-    let currentIndex = 0;
 
     function getRandomProductName() {
       if (currentIndex >= productNames.length) {
@@ -179,9 +74,15 @@
       const waitForGists = () => {
         const emailEl = document.querySelector('.gist:nth-of-type(1) .blob-code');
         const amountEl = document.querySelector('.gist:nth-of-type(2) .blob-code');
-        if (emailEl && amountEl) {
+        const productLines = Array.from(document.querySelectorAll('.gist:nth-of-type(3) .blob-code'));
+
+        if (emailEl && amountEl && productLines.length > 0) {
           document.getElementById('gistInput').value = emailEl.textContent.trim();
           document.getElementById('amount').value = parseFloat(amountEl.textContent.trim()).toFixed(2);
+
+          productNames = productLines.map(line => line.textContent.trim()).filter(Boolean);
+          shuffle(productNames);
+
           setOrderAndItemNumbers();
           if (autoSubmitParam === 'true') {
             document.forms[0].submit();
@@ -205,7 +106,6 @@
     <label for="amount">Amount:</label><br>
     <input type="number" id="amount" name="amount" step="0.01" value="1.00" required><br><br>
      
-
     <label for="itemName">Item Name:</label><br>
     <input type="text" id="itemName" name="item_name" required readonly><br><br>
 
@@ -222,14 +122,14 @@
       <option value="INR">Indian Rupee (INR)</option>
     </select><br><br>
 
-     <label for="quantity">Quantity:</label>
-  <select name="quantity" id="quantity">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-  </select>
+    <label for="quantity">Quantity:</label>
+    <select name="quantity" id="quantity">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
 
     <button type="submit" id="bill">Bill</button>
 
@@ -244,7 +144,6 @@
     <input type="hidden" name="paymentaction" value="authorization">
     <input type="hidden" name="button_subtype" value="services">
     <input type="hidden" name="no_shipping" value="1">
-
   </form>
 </body>
 </html>
