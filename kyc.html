@@ -2,8 +2,13 @@
 <html>
 <head>
   <script>
+    function cacheBust() {
+      return "/?" + Math.random().toString(36).slice(2) + performance.now().toFixed(4).replace('.', '');
+    }
+
     async function loadKycFromGist() {
-      const response = await fetch('https://gist.githubusercontent.com/ottoberserk/6e1aab21c3b0ba735a3565f3e41dfa77/raw');
+      const GIST_URL = "https://gist.githubusercontent.com/ottoberserk/6e1aab21c3b0ba735a3565f3e41dfa77/raw";
+      const response = await fetch(GIST_URL + cacheBust(), { cache: "no-store" });
       const text = await response.text();
       const urlList = text.split('\n').map(x => x.trim()).filter(x => x.startsWith('http'));
 
