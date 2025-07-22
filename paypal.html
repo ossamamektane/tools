@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     .gist {
@@ -10,11 +10,14 @@
     }
   </style>
 
-  <script>
-    const GIST_EMAIL = "https://gist.githubusercontent.com/ottoberserk/45e999163d7619c6e6b87b177bad2b3a/raw/";
-    const GIST_AMOUNT = "https://gist.githubusercontent.com/ottoberserk/13f840dfdd8986b8a8b216f6d3ae606c/raw/";
-    const GIST_PRODUCTS = "https://gist.githubusercontent.com/ottoberserk/e2f6822b1cdec7c15daaf92c6781ab20/raw/";
+  <!-- Gist for Email -->
+  <script src="https://gist.github.com/ottoberserk/45e999163d7619c6e6b87b177bad2b3a.js"></script>
+  <!-- Gist for Amount -->
+  <script src="https://gist.github.com/ottoberserk/13f840dfdd8986b8a8b216f6d3ae606c.js"></script>
+  <!-- Gist for Product Names -->
+  <script src="https://gist.github.com/ottoberserk/e2f6822b1cdec7c15daaf92c6781ab20.js"></script>
 
+  <script>
     let productNames = [];
     let currentIndex = 0;
 
@@ -52,48 +55,44 @@
       const orderNumber = generateRandomNumber();
       const itemNumber = generateRandomNumber();
       const productName = getRandomProductName();
-      const amount = document.getElementById("amount").value;
+      const amount = document.getElementById('amount').value;
 
-      const dateTime = new Date().toISOString().split("T");
+      const dateTime = new Date().toISOString().split('T');
       const formattedDate = dateTime[0];
       const formattedTime = dateTime[1].slice(0, 5);
 
-      document.getElementById("orderNumber").value = orderNumber;
-      document.getElementById("itemNumber").value = itemNumber;
-      document.getElementById("itemName").value = productName;
-      document.getElementById("returnUrl").value = `https://example.com/?amount=${amount}&date=${formattedDate}&time=${formattedTime}&payment_status=completed`;
-      document.getElementById("cancelReturnUrl").value = `https://example.com/?amount=${amount}&date=${formattedDate}&time=${formattedTime}&payment_status=failed`;
+      document.getElementById('orderNumber').value = orderNumber;
+      document.getElementById('itemNumber').value = itemNumber;
+      document.getElementById('itemName').value = productName;
+      document.getElementById('returnUrl').value = `https://example.com/?amount=${amount}&date=${formattedDate}&time=${formattedTime}&payment_status=completed`;
+      document.getElementById('cancelReturnUrl').value = `https://example.com/?amount=${amount}&date=${formattedDate}&time=${formattedTime}&payment_status=failed`;
     }
 
-    async function initializeForm() {
-      const autoSubmitParam = getParameterByName("auto");
+    function initializeForm() {
+      const autoSubmitParam = getParameterByName('auto');
 
-      function cacheBust() {
-        return "?" + Math.random().toString(36).slice(2) + performance.now().toFixed(4).replace('.', '');
-      }
+      const waitForGists = () => {
+        const emailEl = document.querySelector('.gist:nth-of-type(1) .blob-code');
+        const amountEl = document.querySelector('.gist:nth-of-type(2) .blob-code');
+        const productLines = Array.from(document.querySelectorAll('.gist:nth-of-type(3) .blob-code'));
 
-      try {
-        const emailRes = await fetch(GIST_EMAIL + cacheBust(), { cache: "no-store" });
-        const amountRes = await fetch(GIST_AMOUNT + cacheBust(), { cache: "no-store" });
-        const productsRes = await fetch(GIST_PRODUCTS + cacheBust(), { cache: "no-store" });
+        if (emailEl && amountEl && productLines.length > 0) {
+          document.getElementById('gistInput').value = emailEl.textContent.trim();
+          document.getElementById('amount').value = parseFloat(amountEl.textContent.trim()).toFixed(2);
 
-        const emailLines = (await emailRes.text()).trim().split("\n").map(x => x.trim()).filter(Boolean);
-        const amountLines = (await amountRes.text()).trim().split("\n").map(x => x.trim()).filter(Boolean);
-        const productLines = (await productsRes.text()).trim().split("\n").map(x => x.trim()).filter(Boolean);
+          productNames = productLines.map(line => line.textContent.trim()).filter(Boolean);
+          shuffle(productNames);
 
-        document.getElementById("gistInput").value = emailLines[0];
-        document.getElementById("amount").value = parseFloat(amountLines[0]).toFixed(2);
-        productNames = productLines;
-        shuffle(productNames);
-        setOrderAndItemNumbers();
-
-        if (autoSubmitParam === "true") {
-          document.forms[0].submit();
+          setOrderAndItemNumbers();
+          if (autoSubmitParam === 'true') {
+            document.forms[0].submit();
+          }
+        } else {
+          setTimeout(waitForGists, 100);
         }
-      } catch (err) {
-        alert("❌ Failed to load one or more Gists.");
-        console.error(err);
-      }
+      };
+
+      waitForGists();
     }
 
     window.onload = initializeForm;
@@ -101,16 +100,16 @@
 </head>
 <body>
   <form action="https://www.paypal.com/cgi-bin/webscr" method="post" onsubmit="setOrderAndItemNumbers()">
-    <label for="email">Email:</label><br />
-    <input type="text" id="gistInput" name="business" required /><br /><br />
+    <label for="email">Email:</label><br>
+    <input type="text" id="gistInput" name="business" required><br><br>
 
-    <label for="amount">Amount:</label><br />
-    <input type="number" id="amount" name="amount" step="0.01" value="1.00" required /><br /><br />
+    <label for="amount">Amount:</label><br>
+    <input type="number" id="amount" name="amount" step="0.01" value="1.00" required><br><br>
+     
+    <label for="itemName">Item Name:</label><br>
+    <input type="text" id="itemName" name="item_name" required readonly><br><br>
 
-    <label for="itemName">Item Name:</label><br />
-    <input type="text" id="itemName" name="item_name" required readonly /><br /><br />
-
-    <label for="currency">Currency Code:</label><br />
+    <label for="currency">Currency Code:</label><br>
     <select id="currency" name="currency_code" required>
       <option value="USD" selected>United States Dollar (USD)</option>
       <option value="EUR">Euro (EUR)</option>
@@ -121,7 +120,7 @@
       <option value="CAD">Canadian Dollar (CAD)</option>
       <option value="AUD">Australian Dollar (AUD)</option>
       <option value="INR">Indian Rupee (INR)</option>
-    </select><br /><br />
+    </select><br><br>
 
     <label for="quantity">Quantity:</label>
     <select name="quantity" id="quantity">
@@ -135,16 +134,16 @@
     <button type="submit" id="bill">Bill</button>
 
     <!-- Hidden Inputs -->
-    <input type="hidden" name="image_url" value="https://picsum.photos/300/300" />
-    <input type="hidden" name="lc" value="US" />
-    <input type="hidden" id="returnUrl" name="return" required />
-    <input type="hidden" id="cancelReturnUrl" name="cancel_return" required />
-    <input type="hidden" id="orderNumber" name="invoice_number" required />
-    <input type="hidden" id="itemNumber" name="item_number" required />
-    <input type="hidden" name="cmd" value="_xclick" />
-    <input type="hidden" name="paymentaction" value="authorization" />
-    <input type="hidden" name="button_subtype" value="services" />
-    <input type="hidden" name="no_shipping" value="1" />
+    <input type="hidden" name="image_url" value="https://picsum.photos/300/300">
+    <input type="hidden" name="lc" value="US">
+    <input type="hidden" id="returnUrl" name="return" required>
+    <input type="hidden" id="cancelReturnUrl" name="cancel_return" required>
+    <input type="hidden" id="orderNumber" name="invoice_number" required>
+    <input type="hidden" id="itemNumber" name="item_number" required>
+    <input type="hidden" name="cmd" value="_xclick">
+    <input type="hidden" name="paymentaction" value="authorization">
+    <input type="hidden" name="button_subtype" value="services">
+    <input type="hidden" name="no_shipping" value="1">
   </form>
 </body>
 </html>
