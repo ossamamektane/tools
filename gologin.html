@@ -51,7 +51,7 @@
         textarea.value = pastedData;
 
         const data = {};
-        const lines = pastedData.split(/[\n,]+/);
+        const lines = pastedData.split(/\n+/); // only split by newline now
         lines.forEach((line) => {
           const match = line.match(/["']?([^"':]+)["']?\s*:\s*["']?([^"']+)["']?/);
           if (match) {
@@ -68,13 +68,11 @@
           if (input2) input2.value = key === 'postal-code' ? value.toUpperCase() : value;
         }
 
-        // Set billing name from card name
         const cardName = data['cc-name'] || '';
         if (cardName) {
           nameInput.value = cardName;
         }
 
-        // Generate copy string using card pin instead of number
         const parts = [
           data['cc-csc'] || '',
           data['cc-name'] || '',
