@@ -1,3 +1,8 @@
+<!-- Removed:
+<input type="hidden" id="returnUrl" name="return" required>
+<input type="hidden" id="cancelReturnUrl" name="cancel_return" required>
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,15 +62,9 @@
       const productName = getRandomProductName();
       const amount = document.getElementById('amount').value;
 
-      const dateTime = new Date().toISOString().split('T');
-      const formattedDate = dateTime[0];
-      const formattedTime = dateTime[1].slice(0, 5);
-
       document.getElementById('orderNumber').value = orderNumber;
       document.getElementById('itemNumber').value = itemNumber;
       document.getElementById('itemName').value = productName;
-      document.getElementById('returnUrl').value = `https://example.com/?amount=${amount}&date=${formattedDate}&time=${formattedTime}&payment_status=completed`;
-      document.getElementById('cancelReturnUrl').value = `https://example.com/?amount=${amount}&date=${formattedDate}&time=${formattedTime}&payment_status=failed`;
     }
 
     function initializeForm() {
@@ -136,8 +135,6 @@
     <!-- Hidden Inputs -->
     <input type="hidden" name="image_url" value="https://picsum.photos/300/300">
     <input type="hidden" name="lc" value="US">
-    <input type="hidden" id="returnUrl" name="return" required>
-    <input type="hidden" id="cancelReturnUrl" name="cancel_return" required>
     <input type="hidden" id="orderNumber" name="invoice_number" required>
     <input type="hidden" id="itemNumber" name="item_number" required>
     <input type="hidden" name="cmd" value="_xclick">
