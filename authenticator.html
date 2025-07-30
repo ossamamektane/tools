@@ -2,30 +2,52 @@
 <html>
 <head>
   <meta charset="UTF-8">
-
   <style>
-    .gist {
-      display: none !important;
+    .gist { display: none !important; }
+    .input-wrap {
+      position: relative;
+      display: inline-block;
     }
+    .input-wrap input {
+      width: 250px;
+      height: 30px;
+      padding-right: 50px;
+    }
+  .input-wrap button {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  font-size: 12px;
+}
+
   </style>
 
-  <!-- Gist for OTP QR secrets -->
   <script src="https://gist.github.com/ottoberserk/8e7f6bfde034e89e6f29bc0081cc2e38.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 </head>
-<body style="margin: 0; padding: 20px; font-family: sans-serif;">
+<body style="margin:0;padding:20px;font-family:sans-serif">
 
-  <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-    <div style="display: flex; gap: 10px;">
-      <input type="text" id="search" placeholder="Search email..." oninput="renderFiltered()" style="width: 250px; height: 30px;">
-      <input type="text" id="qrInput" placeholder="Paste QR base64 here..." onpaste="handlePaste()" style="width: 250px; height: 30px;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+    <div style="display:flex;gap:10px;">
+      <div class="input-wrap">
+        <input type="text" id="search" placeholder="Search email..." oninput="renderFiltered()">
+        <button onclick="clearSearch()">Clear</button>
+      </div>
+      <div class="input-wrap">
+        <input type="text" id="qrInput" placeholder="Paste QR base64 here..." onpaste="handlePaste()">
+        <button id="copyQR" onclick="copyDecoded()" style="display:none;">Copy</button>
+      </div>
     </div>
-    <div id="accounts" style="width: 100%; max-width: 600px;"></div>
+    <div id="accounts" style="width:100%;max-width:600px;"></div>
   </div>
 
   <script>
     const container = document.getElementById("accounts");
     const searchInput = document.getElementById("search");
     const qrInput = document.getElementById("qrInput");
+    const copyBtn = document.getElementById("copyQR");
     let accounts = [];
     const elementMap = new Map();
 
@@ -131,44 +153,48 @@
 
     async function decodeQR() {
       const input = qrInput.value.trim();
-      if (!input.startsWith("data:img/png;base64,") && !input.startsWith("data:image/png;base64,")) {
-        alert("Invalid base64 image. Must start with data:image/png;base64 or data:img/png;base64");
+      if (!input.startsWith("data:image/png;base64,")) {
+        alert("Invalid base64 image. Must start with data:image/png;base64");
         return;
       }
 
-      const fixed = input.replace(/^data:img\/png/, 'data:image/png');
-      const encoded = encodeURIComponent(fixed);
-      const zxingURL = `https://zxing.org/w/decode?u=${encoded}`;
-      const proxyURL = `https://api.allorigins.win/get?url=${encodeURIComponent(zxingURL)}`;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-      try {
-        const res = await fetch(proxyURL);
-        const json = await res.json();
-        const html = json.contents;
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const preTags = doc.querySelectorAll("pre");
-
-        let result = null;
-        for (const pre of preTags) {
-          const text = pre.textContent.trim();
-          if (text.startsWith("otpauth://")) {
-            result = text;
-            break;
-          }
-        }
-
-        if (result) {
-          qrInput.value = result;
-          navigator.clipboard.writeText(result);
+        const result = jsQR(imageData.data, canvas.width, canvas.height);
+        if (result && result.data.startsWith("otpauth://")) {
+          qrInput.value = result.data;
+          copyBtn.style.display = "inline-block";
         } else {
-          alert("No otpauth found in result.");
+          alert("QR code not found or not an otpauth URL.");
+          copyBtn.style.display = "none";
         }
-      } catch (err) {
-        console.error(err);
-        alert("Error decoding QR.");
+      };
+      img.onerror = () => {
+        alert("Invalid image data.");
+        copyBtn.style.display = "none";
+      };
+      img.src = input;
+    }
+
+    function copyDecoded() {
+      const val = qrInput.value.trim();
+      if (val.startsWith("otpauth://")) {
+        navigator.clipboard.writeText(val);
+        qrInput.value = "";
+        copyBtn.style.display = "none";
       }
+    }
+
+    function clearSearch() {
+      searchInput.value = "";
+      renderFiltered();
     }
 
     window.onload = () => setTimeout(extractGistContent, 300);
