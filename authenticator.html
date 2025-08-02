@@ -151,8 +151,14 @@
     }
 
     async function decodeQR() {
-      const input = qrInput.value.trim();
-      if (!/^data:(img|image)\/png;base64,/.test(input)) {
+      let input = qrInput.value.trim();
+
+      // Normalize "img" to "image"
+      if (input.startsWith("data:img/png;base64,")) {
+        input = input.replace(/^data:img\/png;base64,/, "data:image/png;base64,");
+      }
+
+      if (!input.startsWith("data:image/png;base64,")) {
         alert("Invalid base64 image. Must start with data:image/png;base64 or data:img/png;base64");
         return;
       }
