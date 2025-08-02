@@ -13,15 +13,14 @@
       height: 30px;
       padding-right: 50px;
     }
-  .input-wrap button {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 24px;
-  font-size: 12px;
-}
-
+    .input-wrap button {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 24px;
+      font-size: 12px;
+    }
   </style>
 
   <script src="https://gist.github.com/ottoberserk/8e7f6bfde034e89e6f29bc0081cc2e38.js"></script>
@@ -153,8 +152,8 @@
 
     async function decodeQR() {
       const input = qrInput.value.trim();
-      if (!input.startsWith("data:image/png;base64,")) {
-        alert("Invalid base64 image. Must start with data:image/png;base64");
+      if (!/^data:(img|image)\/png;base64,/.test(input)) {
+        alert("Invalid base64 image. Must start with data:image/png;base64 or data:img/png;base64");
         return;
       }
 
