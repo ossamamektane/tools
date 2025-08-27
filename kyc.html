@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    function cacheBust() {
+      return "/?" + Math.random().toString(36).slice(2) + performance.now().toFixed(4).replace('.', '');
+    }
+
+    async function loadKycFromGist() {
+      const GIST_URL = "https://gist.githubusercontent.com/ossamamektane/4b85ae03fb9ec3fb043f9d699e5c8a03/raw/0aa08efd55c32df09c14c0491fbc3e6dc2d6da36/index.txt";
+      const response = await fetch(GIST_URL + cacheBust(), { cache: "no-store" });
+      const text = await response.text();
+      const urlList = text.split('\n').map(x => x.trim()).filter(x => x.startsWith('http'));
+
+      const groups = {};
+      urlList.forEach(url => {
+        const match = url.match(/(\d+_\d+)_.*_(\d)\.(jpg|jpeg|png)/i);
+        if (match) {
+          const groupId = match[1].split('_')[1];
+          const type = match[2];
+          if (!groups[groupId]) groups[groupId] = {};
+          groups[groupId][type] = url;
+        }
+      });
+
+      const allUsers = Object.values(groups);
+      const user = allUsers[Math.floor(Math.random() * allUsers.length)];
+
+      const container = document.getElementById("kyc-container");
+      const row = document.createElement("div");
+      row.setAttribute("align", "center");
+
+      ['1', '2', '3'].forEach(i => {
+        const img = document.createElement("img");
+        img.src = user[i] || `https://via.placeholder.com/280x180?text=Missing+${i}`;
+        img.width = 280;
+        img.height = 180;
+        img.style.margin = "0 10px";
+        img.style.border = "1px solid #ccc";
+        img.style.background = "#fff";
+        img.style.boxShadow = "0 0 6px rgba(0,0,0,0.15)";
+        img.style.objectFit = "cover";
+        row.appendChild(img);
+      });
+
+      container.appendChild(row);
+    }
+
+    window.onload = loadKycFromGist;
+  </script>
+</head>
+<body bgcolor="#f2f2f2">
+  <div id="kyc-container"></div>
+</body>
+</html>
