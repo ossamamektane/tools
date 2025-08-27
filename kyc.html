@@ -7,7 +7,7 @@
     }
 
     async function loadKycFromGist() {
-      const GIST_URL = "https://gist.githubusercontent.com/ossamamektane/e12609e6cfb1b428e41550bc7b28ba41/raw/6a029c1efadae91ffc6252c99ec0c264bffed070/gistfile1.txt";
+      const GIST_URL = "https://gist.githubusercontent.com/ossamamektane/0698e9d9587c8e1bf94a48ddd1e19a47/raw/214bbc838c6a149e8933fa1d37801f0cb47c5902/index.txt";
       const response = await fetch(GIST_URL + cacheBust(), { cache: "no-store" });
       const text = await response.text();
       const urlList = text.split('\n').map(x => x.trim()).filter(x => x.startsWith('http'));
