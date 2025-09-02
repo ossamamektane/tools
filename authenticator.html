@@ -201,6 +201,7 @@
     function clearSearch() {
       searchInput.value = "";
       renderFiltered();
+      searchInput.focus(); // <-- added line to focus the input after clearing
     }
 
     window.onload = () => setTimeout(extractGistContent, 300);
