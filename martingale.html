@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Martingale Loss Calculator</title>
+</head>
+<body>
+  <h1>Martingale Loss Survival (2×)</h1>
+  <p>Enter your bankroll and base bet. Results update automatically.</p>
+
+  <label>Bankroll:
+    <input id="bankroll" type="number" step="0.01" placeholder="Enter bankroll">
+  </label>
+  <br>
+  <label>Base bet:
+    <input id="base" type="number" step="0.01" placeholder="Enter base bet">
+  </label>
+
+  <div id="out"></div>
+
+  <script>
+    function fmt(n) {
+      const s = (Math.round(n * 100) / 100).toFixed(2);
+      return s.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+    }
+
+    function analyze(bankroll, base) {
+      let total = 0;
+      let n = 0;
+      while (true) {
+        const next = base * Math.pow(2, n);
+        if (total + next <= bankroll + 1e-9) {
+          total += next;
+          n++;
+        } else {
+          break;
+        }
+      }
+      const largestAffordableBet = n > 0 ? base * Math.pow(2, n - 1) : 0;
+      const nextBet = base * Math.pow(2, n);
+      return {
+        absorbLosses: n,
+        placeNextLosses: Math.max(0, n - 1),
+        largestAffordableBet,
+        totalSpent: total,
+        nextBet,
+        profitPerCycle: base
+      };
+    }
+
+    function compute() {
+      const out = document.getElementById('out');
+      const bankroll = parseFloat(document.getElementById('bankroll').value);
+      const base = parseFloat(document.getElementById('base').value);
+
+      if (!(bankroll > 0) || !(base > 0)) {
+        out.innerHTML = "<p>Please enter positive numbers for bankroll and base bet.</p>";
+        return;
+      }
+
+      const r = analyze(bankroll, base);
+
+      let html = "<table border='1' cellpadding='6' cellspacing='0'>";
+      html += "<tr><th>Base Bet</th><th>Absorbable Losses</th><th>Survive & Place Next</th><th>Largest Bet You Can Place</th><th>Total Spent</th><th>Next Bet (Not Affordable)</th><th>Profit per Cycle</th></tr>";
+      html += "<tr>"
+           + "<td>$" + fmt(base) + "</td>"
+           + "<td>" + r.absorbLosses + "</td>"
+           + "<td>" + r.placeNextLosses + "</td>"
+           + "<td>$" + fmt(r.largestAffordableBet) + "</td>"
+           + "<td>$" + fmt(r.totalSpent) + "</td>"
+           + "<td>$" + fmt(r.nextBet) + "</td>"
+           + "<td>$" + fmt(r.profitPerCycle) + "</td>"
+           + "</tr>";
+      html += "</table>";
+
+      out.innerHTML = html;
+    }
+
+    document.getElementById('bankroll').addEventListener('input', compute);
+    document.getElementById('base').addEventListener('input', compute);
+  </script>
+</body>
+</html>
