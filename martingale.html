@@ -78,6 +78,14 @@
 
     document.getElementById('bankroll').addEventListener('input', compute);
     document.getElementById('base').addEventListener('input', compute);
+
+    // NEW: when pressing Enter in bankroll, move to base input
+    document.getElementById('bankroll').addEventListener('keydown', function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById('base').focus();
+      }
+    });
   </script>
 </body>
 </html>
