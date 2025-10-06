@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FanTan Streak Tracker v2</title>
+  <style>
+    :root{--bg:#0f172a;--panel:#111827;--fg:#e5e7eb;--muted:#9ca3af;--accent:#22d3ee;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;}
+    html,body{height:100%;}
+    body{margin:0;background:linear-gradient(180deg,#0b1029,#0c132f);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif;}
+    .wrap{max-width:920px;margin:32px auto;padding:0 16px;}
+    .card{background:rgba(255,255,255,0.04);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.25);}    
+    h1{margin:0 0 8px;font-weight:800;letter-spacing:.3px;font-size:24px}
+    .sub{color:var(--muted);margin-bottom:20px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    button{cursor:pointer;border:1px solid rgba(255,255,255,0.12);background:#0b1228;color:var(--fg);padding:10px 14px;border-radius:12px;font-weight:700}
+    button:hover{border-color:var(--accent)}
+    .primary{background:#0b1636}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:#0b1430;border:1px solid rgba(255,255,255,0.12);padding:8px 12px;border-radius:999px}
+    .status{font-size:18px;font-weight:800}
+    .ok{color:var(--good)}
+    .warn{color:var(--warn)}
+    .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:8px 0 4px}
+    .log{max-height:220px;overflow:auto;background:#0b1228;border-radius:12px;padding:10px;border:1px solid rgba(255,255,255,0.08)}
+    .tag{display:inline-block;background:#0a1025;border:1px solid rgba(255,255,255,0.08);padding:3px 8px;border-radius:999px;margin:0 6px 6px 0;font-size:12px;color:var(--muted)}
+    .sep{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:14px 0}
+    .help{font-size:12px;color:var(--muted)}
+    .footer{display:flex;gap:10px;flex-wrap:wrap}
+    input[type=text]{background:#0b1228;border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:var(--fg);padding:10px 12px;min-width:320px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>FanTan Streak Tracker v2</h1>
+      <div class="sub">Reads only the digit immediately after <span class="pill">FanTan result:</span> and ignores all other numbers (timestamps, usernames, etc.).</div>
+
+      <div class="row">
+        <div class="grid">
+          <button data-v="1">1</button>
+          <button data-v="2">2</button>
+          <button data-v="3">3</button>
+          <button data-v="4">4</button>
+        </div>
+        <input id="manual" type="text" placeholder="Paste logs or numbers (e.g., lines with 'FanTan result: 1')" />
+        <button id="runList">Run List</button>
+        <button id="undo">Undo</button>
+        <button id="reset" class="primary">Hard Reset</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="status" id="status">Ready.</div>
+      <div class="help">Output: <b>Potential streak</b> · <b>N streak(s) in a row</b> (⚠️ at 3). <u>Run List</u> resets before running and clears input to prevent double-counting.</div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <div><span class="muted">Current chain:</span> <span id="chain">0</span></div>
+        <div><span class="muted">Active streak:</span> <span id="active">None</span></div>
+        <div><span class="muted">Pending single:</span> <span id="pending">None</span></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="muted" style="margin:6px 0 8px;">Event log</div>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // ======== State ========
+  const state = {
+    history: [],           // raw inputs
+    lastParity: null,      // 'even' | 'odd' | null
+    runCount: 0,           // consecutive count of lastParity
+    currentStreak: null,   // 'even' | 'odd' | null (confirmed streak ongoing)
+    chainCount: 0,         // number of confirmed streaks back-to-back (no single-opposite-single in between)
+    pendingSingle: null    // 'even' | 'odd' | null (a single waiting to become streak or cause reset)
+  };
+
+  // ======== Utilities ========
+  const parity = n => (n % 2 === 0 ? 'even' : 'odd');
+  const s = sel => document.querySelector(sel);
+  const log = msg => { const el = s('#log'); const div = document.createElement('div'); div.className='tag'; div.textContent = msg; el.prepend(div); };
+  const setStatus = (msg, klass='') => { const el = s('#status'); el.className = 'status ' + klass; el.textContent = msg; }
+  const refresh = () => {
+    s('#chain').textContent = state.chainCount;
+    s('#active').textContent = state.currentStreak ? state.currentStreak.toUpperCase() : 'None';
+    s('#pending').textContent = state.pendingSingle ? state.pendingSingle.toUpperCase() : 'None';
+  };
+
+  // ======== Core Logic ========
+  function applyNumber(n){
+    n = Number(n);
+    if (![1,2,3,4].includes(n)) return;
+    state.history.push(n);
+
+    const p = parity(n);
+
+    if (state.lastParity === p){
+      // continuing same parity
+      state.runCount += 1;
+    } else {
+      // parity switch
+      state.lastParity = p;
+      state.runCount = 1;
+    }
+
+    // Determine effects
+    let output = '';
+
+    if (state.runCount === 1){
+      // This is a single. Check reset condition: previous pendingSingle exists and opposite to this one
+      if (state.pendingSingle && state.pendingSingle !== p){
+        // single followed by opposite single => RESET CHAIN
+        state.chainCount = 0;
+        state.currentStreak = null;
+        log(`Reset (single ${capitalize(opposite(p))} → single ${capitalize(p)})`);
+      }
+      // set/update pending single to current parity
+      state.pendingSingle = p;
+      output = 'Potential streak';
+      setStatus(output, 'muted');
+    } else if (state.runCount === 2){
+      // We just formed a new confirmed streak of parity p
+      state.currentStreak = p;
+      state.chainCount += 1; // new streak appended to chain
+      state.pendingSingle = null; // no longer a single
+
+      output = chainText(state.chainCount);
+      setStatus(output, state.chainCount >= 3 ? 'warn' : 'ok');
+      if (state.chainCount >= 3){
+        log('3 streaks in a row ⚠️');
+      }
+    } else if (state.runCount > 2){
+      // Still inside the same streak; keep reporting current chain count
+      output = chainText(state.chainCount);
+      setStatus(output, state.chainCount >= 3 ? 'warn' : 'ok');
+    }
+
+    refresh();
+    log(`#${n} → ${p.toUpperCase()} :: ${output}`);
+  }
+
+  function chainText(n){
+    return `${n} ${n===1?'streak':'streaks'} in a row${n>=3?' ⚠️':''}`;
+  }
+
+  function opposite(p){ return p === 'even' ? 'odd' : 'even'; }
+  function capitalize(x){ return x.charAt(0).toUpperCase() + x.slice(1); }
+
+  // ======== Undo / Reset ========
+  function hardReset(){
+    state.history = [];
+    state.lastParity = null;
+    state.runCount = 0;
+    state.currentStreak = null;
+    state.chainCount = 0;
+    state.pendingSingle = null;
+    s('#log').innerHTML = '';
+    setStatus('Ready.','');
+    refresh();
+  }
+
+  function undo(){
+    if (!state.history.length) return;
+    const copy = [...state.history];
+    hardReset();
+    copy.pop();
+    copy.forEach(applyNumber);
+  }
+
+  // ======== UI Wiring ========
+  document.querySelectorAll('button[data-v]').forEach(btn=>{
+    btn.addEventListener('click', ()=> applyNumber(Number(btn.dataset.v)) );
+  });
+  s('#reset').addEventListener('click', hardReset);
+  s('#undo').addEventListener('click', undo);
+  s('#runList').addEventListener('click', ()=>{
+    const text = s('#manual').value.trim();
+    if(!text){
+      setStatus('No input — nothing ran.','muted');
+      return;
+    }
+    // Extract only the digit that appears right after 'FanTan result:' (case-insensitive)
+    const re = /FanTan\s*result:\s*([1-4])\b/gi;
+    const nums = [];
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      nums.push(Number(m[1]));
+    }
+    if(nums.length === 0){
+      setStatus('No FanTan results found in text.','muted');
+      return;
+    }
+    // Run list from a clean slate to avoid double-counting on repeated clicks
+    hardReset();
+    nums.forEach(applyNumber);
+    // Clear input after run to prevent accidental re-runs of the same list
+    s('#manual').value = '';
+  });
+
+  // init
+  refresh();
+})();
+</script>
+</body>
+</html>
