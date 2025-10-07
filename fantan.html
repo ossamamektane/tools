@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FanTan Streak Tracker v2</title>
+  <title>FanTan Streak Tracker</title>
   <style>
     :root{--bg:#0f172a;--panel:#111827;--fg:#e5e7eb;--muted:#9ca3af;--accent:#22d3ee;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;}
     html,body{height:100%;}
@@ -27,14 +27,14 @@
     .sep{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:14px 0}
     .help{font-size:12px;color:var(--muted)}
     .footer{display:flex;gap:10px;flex-wrap:wrap}
-    input[type=text]{background:#0b1228;border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:var(--fg);padding:10px 12px;min-width:320px}
+    input[type=text]{background:#0b1228;border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:var(--fg);padding:10px 12px;min-width:180px}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>FanTan Streak Tracker v2</h1>
-      <div class="sub">Reads only the digit immediately after <span class="pill">FanTan result:</span> and ignores all other numbers (timestamps, usernames, etc.).</div>
+      <h1>FanTan Streak Tracker</h1>
+      <div class="sub">Rule set: <span class="pill">Streak = 2+ same parity (Even/ Odd)</span> <span class="pill">Reset chain if one single is followed by opposite single</span></div>
 
       <div class="row">
         <div class="grid">
@@ -43,7 +43,7 @@
           <button data-v="3">3</button>
           <button data-v="4">4</button>
         </div>
-        <input id="manual" type="text" placeholder="Paste logs or numbers (e.g., lines with 'FanTan result: 1')" />
+        <input id="manual" type="text" placeholder="Paste a list e.g. 4 4 1 3 4 2" />
         <button id="runList">Run List</button>
         <button id="undo">Undo</button>
         <button id="reset" class="primary">Hard Reset</button>
@@ -52,7 +52,7 @@
       <div class="sep"></div>
 
       <div class="status" id="status">Ready.</div>
-      <div class="help">Output: <b>Potential streak</b> · <b>N streak(s) in a row</b> (⚠️ at 3). <u>Run List</u> resets before running and clears input to prevent double-counting.</div>
+      <div class="help">Output: <b>Potential streak</b> · <b>N streak(s) in a row</b> (⚠️ at 3). <u>Run List</u> resets first to avoid double-counting.</div>
 
       <div class="sep"></div>
 
@@ -79,6 +79,7 @@
     currentStreak: null,   // 'even' | 'odd' | null (confirmed streak ongoing)
     chainCount: 0,         // number of confirmed streaks back-to-back (no single-opposite-single in between)
     pendingSingle: null    // 'even' | 'odd' | null (a single waiting to become streak or cause reset)
+    , lastNotifiedChain: 0
   };
 
   // ======== Utilities ========
@@ -118,6 +119,7 @@
         // single followed by opposite single => RESET CHAIN
         state.chainCount = 0;
         state.currentStreak = null;
+        state.lastNotifiedChain = 0;
         log(`Reset (single ${capitalize(opposite(p))} → single ${capitalize(p)})`);
       }
       // set/update pending single to current parity
@@ -134,6 +136,10 @@
       setStatus(output, state.chainCount >= 3 ? 'warn' : 'ok');
       if (state.chainCount >= 3){
         log('3 streaks in a row ⚠️');
+        if (state.chainCount === 3 && state.lastNotifiedChain !== 3){
+          notifyDiscord('⚠️ FanTan: 3 streaks in a row (active=' + p.toUpperCase() + ')');
+          state.lastNotifiedChain = 3;
+        }
       }
     } else if (state.runCount > 2){
       // Still inside the same streak; keep reporting current chain count
@@ -152,6 +158,20 @@
   function opposite(p){ return p === 'even' ? 'odd' : 'even'; }
   function capitalize(x){ return x.charAt(0).toUpperCase() + x.slice(1); }
 
+  // ======== Discord Webhook ========
+  async function notifyDiscord(text){
+    try{
+      await fetch('https://discord.com/api/webhooks/1403239335502811238/usXl84D0WXwEQr3l9NC49pqnSGlPGREq_OpLBF7E4cEzt3IxIELxfn4dQdSB0xSnT7KZ',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({content: text})
+      });
+      log('Webhook sent');
+    }catch(e){
+      log('Webhook failed');
+    }
+  }
+
   // ======== Undo / Reset ========
   function hardReset(){
     state.history = [];
@@ -160,6 +180,7 @@
     state.currentStreak = null;
     state.chainCount = 0;
     state.pendingSingle = null;
+    state.lastNotifiedChain = 0;
     s('#log').innerHTML = '';
     setStatus('Ready.','');
     refresh();
@@ -185,17 +206,8 @@
       setStatus('No input — nothing ran.','muted');
       return;
     }
-    // Extract only the digit that appears right after 'FanTan result:' (case-insensitive)
-    const re = /FanTan\s*result:\s*([1-4])\b/gi;
-    const nums = [];
-    let m;
-    while ((m = re.exec(text)) !== null) {
-      nums.push(Number(m[1]));
-    }
-    if(nums.length === 0){
-      setStatus('No FanTan results found in text.','muted');
-      return;
-    }
+    // Split on any non-digit boundaries to accept spaces/commas/newlines etc.
+    const nums = text.split(/[^0-9]+/).map(x=>Number(x)).filter(x=>[1,2,3,4].includes(x));
     // Run list from a clean slate to avoid double-counting on repeated clicks
     hardReset();
     nums.forEach(applyNumber);
