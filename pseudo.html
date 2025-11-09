@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random 6 Number Generator (1–69)</title>
+  <style>
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      color: #38bdf8;
+    }
+    #numbers {
+      font-size: 2rem;
+      margin: 20px 0;
+      letter-spacing: 8px;
+    }
+    button {
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #0284c7;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎲 Random 6 Numbers (1–69)</h1>
+  <div id="numbers">Click “Generate” 👇</div>
+  <button onclick="generateNumbers()">Generate</button>
+
+  <script>
+    function generateNumbers() {
+      const numbers = new Set();
+      while (numbers.size < 6) {
+        numbers.add(Math.floor(Math.random() * 69) + 1);
+      }
+      document.getElementById('numbers').textContent =
+        Array.from(numbers).sort((a, b) => a - b).join('  ');
+    }
+  </script>
+</body>
+</html>
