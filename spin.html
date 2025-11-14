@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baccarat 5-Hand Wheel</title>
+<style>
+  body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; background: #f0f0f0; }
+  #wheelCanvas { border: 5px solid #333; border-radius: 50%; background: #fff; }
+  button { margin-top: 20px; padding: 10px 20px; font-size: 18px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<canvas id="wheelCanvas" width="500" height="500"></canvas>
+<button onclick="spinWheel()">SPIN</button>
+
+<script>
+const canvas = document.getElementById('wheelCanvas');
+const ctx = canvas.getContext('2d');
+const radius = canvas.width / 2;
+
+// All 32 sequences using only 🔵 and 🔴
+const sequences = [
+  "🔵🔵🔵🔵🔵","🔵🔵🔵🔵🔴","🔵🔵🔵🔴🔵","🔵🔵🔵🔴🔴",
+  "🔵🔵🔴🔵🔵","🔵🔵🔴🔵🔴","🔵🔵🔴🔴🔵","🔵🔵🔴🔴🔴",
+  "🔵🔴🔵🔵🔵","🔵🔴🔵🔵🔴","🔵🔴🔵🔴🔵","🔵🔴🔵🔴🔴",
+  "🔵🔴🔴🔵🔵","🔵🔴🔴🔵🔴","🔵🔴🔴🔴🔵","🔵🔴🔴🔴🔴",
+  "🔴🔵🔵🔵🔵","🔴🔵🔵🔵🔴","🔴🔵🔵🔴🔵","🔴🔵🔵🔴🔴",
+  "🔴🔵🔴🔵🔵","🔴🔵🔴🔵🔴","🔴🔵🔴🔴🔵","🔴🔵🔴🔴🔴",
+  "🔴🔴🔵🔵🔵","🔴🔴🔵🔵🔴","🔴🔴🔵🔴🔵","🔴🔴🔵🔴🔴",
+  "🔴🔴🔴🔵🔵","🔴🔴🔴🔵🔴","🔴🔴🔴🔴🔵","🔴🔴🔴🔴🔴"
+];
+
+const sliceAngle = 2 * Math.PI / sequences.length;
+let currentAngle = 0;
+
+// Draw the wheel
+function drawWheel() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  sequences.forEach((seq, i) => {
+    ctx.beginPath();
+    ctx.moveTo(radius, radius);
+    ctx.fillStyle = i % 2 === 0 ? '#3498db' : '#e74c3c'; // Blue and Red slices
+    ctx.arc(radius, radius, radius, i*sliceAngle, (i+1)*sliceAngle);
+    ctx.lineTo(radius, radius);
+    ctx.fill();
+    
+    // Draw sequence text
+    ctx.save();
+    ctx.translate(radius, radius);
+    ctx.rotate(i*sliceAngle + sliceAngle/2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(seq, radius - 10, 5);
+    ctx.restore();
+  });
+
+  // Draw arrow at the top
+  ctx.fillStyle = "#000";
+  ctx.beginPath();
+  ctx.moveTo(radius, 10);
+  ctx.lineTo(radius - 15, 30);
+  ctx.lineTo(radius + 15, 30);
+  ctx.closePath();
+  ctx.fill();
+}
+
+drawWheel();
+
+// Spin logic
+function spinWheel() {
+  // Pick a random winning index
+  const winningIndex = Math.floor(Math.random() * sequences.length);
+  
+  // Calculate target angle so that winningIndex lands at arrow
+  const targetAngle = (3*Math.PI/2) - (winningIndex * sliceAngle) - sliceAngle/2;
+  
+  // Add multiple rotations for effect
+  const rotations = 5 * 2 * Math.PI;
+  const finalAngle = rotations + targetAngle;
+  
+  let start = null;
+  const duration = 4000; // spin duration 4 sec
+
+  function animate(time) {
+    if (!start) start = time;
+    let progress = (time - start) / duration;
+    if (progress > 1) progress = 1;
+    
+    // ease out cubic for smooth stop
+    const eased = 1 - Math.pow(1 - progress, 3);
+    currentAngle = eased * finalAngle;
+    
+    ctx.save();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.translate(radius, radius);
+    ctx.rotate(currentAngle);
+    ctx.translate(-radius, -radius);
+    drawWheel();
+    ctx.restore();
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Flip 🔵 ↔ 🔴 for opposite
+      const picked = sequences[winningIndex];
+      const opposite = picked.replace(/🔵/g, 'x').replace(/🔴/g, '🔵').replace(/x/g, '🔴');
+      alert(`Result: ${picked}\nOpposite: ${opposite}`);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+</script>
+
+</body>
+</html>
