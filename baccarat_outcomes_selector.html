@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baccarat Outcomes Selector</title>
+</head>
+<body>
+  <h1>Baccarat Outcomes</h1>
+
+  <ol id="outcomes-list"></ol>
+
+  <script>
+    const outcomes = [
+      ['🔴', '🔴', '🔴'],
+      ['🔴', '🔴', '🔵'],
+      ['🔴', '🔵', '🔴'],
+      ['🔴', '🔵', '🔵'],
+      ['🔵', '🔴', '🔴'],
+      ['🔵', '🔴', '🔵'],
+      ['🔵', '🔵', '🔴'],
+      ['🔵', '🔵', '🔵']
+    ];
+
+    const list = document.getElementById('outcomes-list');
+
+    function getOpposite(sequence) {
+      return sequence.map(e => e === '🔴' ? '🔵' : '🔴');
+    }
+
+    outcomes.forEach((sequence, index) => {
+      const li = document.createElement('li');
+
+      const label = document.createElement('label');
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'selected-outcome';
+      radio.value = sequence.join('');
+
+      const originalText = sequence.join(' ');
+      const oppositeText = getOpposite(sequence).join(' ');
+
+      label.appendChild(radio);
+      label.appendChild(document.createTextNode(' ' + originalText + ' → ' + oppositeText));
+
+      li.appendChild(label);
+      list.appendChild(li);
+    });
+  </script>
+</body>
+</html>
