@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baccarat Outcomes Selector</title>
+</head>
+<body>
+  <h1>Baccarat Outcomes</h1>
+
+  <ol id="outcomes-list"></ol>
+
+  <script>
+    // S = same, D = different
+    const outcomes = [
+      ['S', 'S', 'S'],
+      ['S', 'S', 'D'],
+      ['S', 'D', 'S'],
+      ['S', 'D', 'D'],
+      ['D', 'S', 'S'],
+      ['D', 'S', 'D'],
+      ['D', 'D', 'S'],
+      ['D', 'D', 'D']
+    ];
+
+    const list = document.getElementById('outcomes-list');
+
+    function getOpposite(sequence) {
+      return sequence.map(e => e === 'S' ? 'D' : 'S');
+    }
+
+    function createSymbol(symbol) {
+      const span = document.createElement('span');
+
+      if (symbol === 'D') {
+        span.textContent = 'D';
+        span.style.background = 'linear-gradient(to right, red 50%, blue 50%)';
+        span.style.webkitBackgroundClip = 'text';
+        span.style.webkitTextFillColor = 'transparent';
+      } else {
+        span.textContent = 'S';
+      }
+
+      return span;
+    }
+
+    function appendSequence(container, sequence) {
+      sequence.forEach((symbol, i) => {
+        container.appendChild(createSymbol(symbol));
+        if (i < sequence.length - 1) {
+          container.appendChild(document.createTextNode(' '));
+        }
+      });
+    }
+
+    outcomes.forEach((sequence, index) => {
+      const li = document.createElement('li');
+
+      const label = document.createElement('label');
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'selected-outcome';
+      radio.value = sequence.join('-');
+
+      label.appendChild(radio);
+      label.appendChild(document.createTextNode(' '));
+
+      // original
+      appendSequence(label, sequence);
+
+      label.appendChild(document.createTextNode(' → '));
+
+      // opposite
+      appendSequence(label, getOpposite(sequence));
+
+      li.appendChild(label);
+      list.appendChild(li);
+    });
+  </script>
+</body>
+</html>
