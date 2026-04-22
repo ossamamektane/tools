@@ -4,41 +4,83 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Baccarat Outcomes Selector</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      padding: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 14px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .different {
+      background: linear-gradient(to right, red 50%, blue 50%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
+    }
+
+    .same {
+      font-weight: bold;
+    }
+
+    #count {
+      margin: 10px 0 20px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <h1>Baccarat Outcomes</h1>
 
+  <div class="controls">
+    <label for="handsInput">Number of hands:</label>
+    <input type="number" id="handsInput" min="1" max="15" value="3" />
+    <button onclick="generateOutcomes()">Generate</button>
+  </div>
+
+  <div id="count"></div>
   <ol id="outcomes-list"></ol>
 
   <script>
-    // S = same, D = different
-    const outcomes = [
-      ['S', 'S', 'S'],
-      ['S', 'S', 'D'],
-      ['S', 'D', 'S'],
-      ['S', 'D', 'D'],
-      ['D', 'S', 'S'],
-      ['D', 'S', 'D'],
-      ['D', 'D', 'S'],
-      ['D', 'D', 'D']
-    ];
-
     const list = document.getElementById('outcomes-list');
+    const count = document.getElementById('count');
+    const handsInput = document.getElementById('handsInput');
 
     function getOpposite(sequence) {
-      return sequence.map(e => e === 'S' ? 'D' : 'S');
+      return sequence.map(symbol => symbol === 'S' ? 'D' : 'S');
     }
 
     function createSymbol(symbol) {
       const span = document.createElement('span');
+      span.textContent = symbol;
 
       if (symbol === 'D') {
-        span.textContent = 'D';
-        span.style.background = 'linear-gradient(to right, red 50%, blue 50%)';
-        span.style.webkitBackgroundClip = 'text';
-        span.style.webkitTextFillColor = 'transparent';
+        span.className = 'different';
       } else {
-        span.textContent = 'S';
+        span.className = 'same';
       }
 
       return span;
@@ -53,30 +95,58 @@
       });
     }
 
-    outcomes.forEach((sequence, index) => {
-      const li = document.createElement('li');
+    function generateBinarySequences(length) {
+      const results = [];
+      const total = Math.pow(2, length);
 
-      const label = document.createElement('label');
+      for (let i = 0; i < total; i++) {
+        const sequence = [];
+        for (let j = length - 1; j >= 0; j--) {
+          sequence.push((i & (1 << j)) ? 'D' : 'S');
+        }
+        results.push(sequence);
+      }
 
-      const radio = document.createElement('input');
-      radio.type = 'radio';
-      radio.name = 'selected-outcome';
-      radio.value = sequence.join('-');
+      return results;
+    }
 
-      label.appendChild(radio);
-      label.appendChild(document.createTextNode(' '));
+    function generateOutcomes() {
+      const hands = parseInt(handsInput.value, 10);
 
-      // original
-      appendSequence(label, sequence);
+      if (isNaN(hands) || hands < 1) {
+        alert('Enter a valid number of hands.');
+        return;
+      }
 
-      label.appendChild(document.createTextNode(' → '));
+      list.innerHTML = '';
 
-      // opposite
-      appendSequence(label, getOpposite(sequence));
+      const outcomes = generateBinarySequences(hands);
+      count.textContent = `Total possible outcomes: ${outcomes.length}`;
 
-      li.appendChild(label);
-      list.appendChild(li);
-    });
+      outcomes.forEach(sequence => {
+        const li = document.createElement('li');
+        const label = document.createElement('label');
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'selected-outcome';
+        radio.value = sequence.join('-');
+
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(' '));
+
+        appendSequence(label, sequence);
+
+        label.appendChild(document.createTextNode(' → '));
+
+        appendSequence(label, getOpposite(sequence));
+
+        li.appendChild(label);
+        list.appendChild(li);
+      });
+    }
+
+    generateOutcomes();
   </script>
 </body>
 </html>
